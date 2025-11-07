@@ -1,49 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Meu Player de Stream</title>
+    <title>Meu Player de Vídeo</title>
     <style>
         body { background: #222; display: grid; place-items: center; min-height: 100vh; }
-        video { width: 80%; max-width: 900px; }
+        video { width: 80%; max-width: 900px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <video id="meu-video" controls></video>
-
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <script>
-        // Pega o link do stream que você quer tocar
-        // ESTE É O LINK QUE ESTÁVAMOS TESTANDO ANTES
-        var streamURL = "http://geartool.net:80/nQFPp3/WPvmKG/147621";
-
-        // Pega o elemento <video> que colocamos no HTML
-        var video = document.getElementById('meu-video');
-
-        // Verifica se o navegador suporta HLS.js
-        if (Hls.isSupported()) {
-            var hls = new Hls();
-            
-            // "Carregue" o stream
-            hls.loadSource(streamURL);
-            
-            // "Anexe" o stream ao player de vídeo
-            hls.attachMedia(video);
-            
-            // Opcional: Tenta dar play automaticamente
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play();
-            });
-        } 
-        // Caso o navegador seja o Safari (que já toca M3U8 sozinho)
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = streamURL;
-            video.addEventListener('loadedmetadata', function() {
-                video.play();
-            });
-        }
-    </script>
+    <video id="meu-video" controls autoplay>
+        <source src="video.mp4" type="video/mp4">
+        Seu navegador não suporta o elemento de vídeo.
+    </video>
 
 </body>
 </html>
