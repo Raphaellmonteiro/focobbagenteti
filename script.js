@@ -1,2 +1,3 @@
-// O link original que estávamos usando
-var streamURL = "http://geartool.net:80/nQFPp3/WPvmKG/147621";
+<video controls autoplay>
+  <source src="video.mp4" type="video/mp4">
+</video>
