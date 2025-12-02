@@ -1,0 +1,152 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portfolio — Maria J. S. S.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <meta name="description" content="Portfólio de Maria J. S. S. — resiliência, experiência e dedicação.">
+</head>
+<body>
+  <main class="page">
+    <nav class="nav">
+      <div class="brand">Maria J. S. S.</div>
+      <ul class="nav-links">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#trajetoria">Trajetória</a></li>
+        <li><a href="#habilidades">Habilidades</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+      <button id="themeToggle" class="btn-ghost" aria-label="Alternar tema">🌙</button>
+    </nav>
+
+    <header class="hero" id="home" aria-labelledby="hero-title">
+      <div class="hero-left">
+        <h1 id="hero-title" class="headline">
+          Maria J. S. S.
+          <span class="accent">— Resiliência & Vida Acadêmica</span>
+        </h1>
+        <p class="lead">
+          Estudante universitária (4º período, EAD) e profissional dedicada com 50 anos — transformando experiência de vida em aprendizado contínuo.
+        </p>
+        <div class="hero-cta">
+          <a href="#trajetoria" class="btn-primary">Ver trajetória</a>
+          <a href="#contato" class="btn-outline">Entrar em contato</a>
+        </div>
+        <div class="badges">
+          <div class="badge">🎓 4º Período (EAD)</div>
+          <div class="badge">🏡 União estável · 31 anos</div>
+          <div class="badge">💪 Resiliência</div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <!-- Substitua assets/maria.jpg pelo caminho da sua imagem se necessário -->
+        <div class="photo-frame" role="img" aria-label="Foto de Maria">
+          <img src="./img/maria.png" alt="Maria J. S. S.">
+        </div>
+      </div>
+    </header>
+
+    <section id="sobre" class="section glass reveal">
+      <div class="section-grid">
+        <div>
+          <h2>Sobre Maria</h2>
+          <p>
+            Maria é uma profissional com trajetória de vida rica e inspiradora. Aos 50 anos, voltou à universidade motivada por apoio da sua rede (esposo, “filho do coração” e colegas) e hoje concilia estudos EAD, vida familiar e atividades profissionais com disciplina e paixão pelo aprendizado.
+          </p>
+          <ul class="key-points">
+            <li><strong>Família:</strong> união estável de 31 anos; apoio total da rede.</li>
+            <li><strong>Valores:</strong> família, união e educação contínua.</li>
+            <li><strong>Estilo de estudo:</strong> autodidata, disciplinada e adaptável.</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h3 class="muted">Dados rápidos</h3>
+          <div class="stat">
+            <span class="num" data-target="50">50</span>
+            <span class="label">Anos</span>
+          </div>
+          <div class="stat">
+            <span class="num" data-target="4">4</span>
+            <span class="label">Período (EAD)</span>
+          </div>
+          <div class="stat">
+            <span class="num" data-target="31">31</span>
+            <span class="label">Anos de união</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trajetoria" class="section reveal">
+      <h2>Trajetória Educacional</h2>
+      <div class="timeline">
+        <article class="timeline-item">
+          <div class="dot"></div>
+          <div class="time">Ensino Médio</div>
+          <div class="content">
+            Concluiu o ensino médio em escola estadual após transferência de Pernambuco. Superou greves e métodos ineficazes com disciplina e dedicação.
+          </div>
+        </article>
+
+        <article class="timeline-item">
+          <div class="dot"></div>
+          <div class="time">Retorno à Academia</div>
+          <div class="content">
+            Motivada por apoiadores, foi aprovada na redação e ingressou na Estácio de Sá. Hoje cursa o 4º período em formato EAD, conciliando estudo e família.
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="habilidades" class="section glass reveal">
+      <h2>Habilidades & Forças</h2>
+      <div class="skills-grid">
+        <div class="skill">
+          <h4>Resiliência</h4>
+          <p>Persistência em face de adversidade; prova pela conclusão dos estudos e retorno à universidade.</p>
+        </div>
+        <div class="skill">
+          <h4>Gestão do Tempo</h4>
+          <p>Equilibra vida familiar, trabalho e estudos EAD, demonstrando organização e disciplina.</p>
+        </div>
+        <div class="skill">
+          <h4>Rede de Apoio</h4>
+          <p>Consegue mobilizar apoio emocional e prático — habilidade valiosa em equipes e projetos comunitários.</p>
+        </div>
+        <div class="skill">
+          <h4>Aprendizado Contínuo</h4>
+          <p>Curiosidade e vontade de aprender, mesmo após décadas fora da academia.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="section reveal">
+      <h2>Contato</h2>
+      <p class="muted">Interessado em conhecer melhor Maria ou convidá-la para um projeto? Entre em contato.</p>
+
+      <form class="contact-form" action="#" onsubmit="handleForm(event)">
+        <input type="text" name="nome" placeholder="Seu nome" required />
+        <input type="email" name="email" placeholder="Seu e-mail" required />
+        <textarea name="mensagem" rows="4" placeholder="Mensagem" required></textarea>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Enviar mensagem</button>
+          <a class="btn-ghost" href="#home">Voltar ao topo</a>
+        </div>
+      </form>
+
+      <footer class="site-footer">
+        <p>Portfolio produzido com carinho • Maria J. S. S.</p>
+      </footer>
+    </section>
+  </main>
+
+  <script src="js/script.js" defer></script>
+</body>
+</html>
+
