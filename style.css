@@ -419,3 +419,51 @@ select:focus, input:focus {
 
 .essay-trend-line.trend-up { color: var(--accent-green); }
 .essay-trend-line.trend-down { color: var(--accent-red); }
+
+/* CHECKLIST DE TÓPICOS (COBERTURA DO EDITAL) POR MATÉRIA */
+.subject-row-expanded {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.subject-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topic-pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.topic-pill {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 9px;
+    border-radius: 14px;
+    font-size: 0.7rem;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+
+.topic-pill:hover {
+    border-color: var(--accent-blue);
+}
+
+.topic-pill.studying {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.08);
+}
+
+.topic-pill.reviewed {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    background-color: rgba(16, 185, 129, 0.08);
+}
