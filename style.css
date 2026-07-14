@@ -1,0 +1,316 @@
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --border-color: #334155;
+    --font-family: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    line-height: 1.5;
+    padding: 15px;
+}
+
+.main-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+
+.main-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* CONTAINER PRINCIPAL EM GRID DE 3 COLUNAS */
+.dashboard-grid {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1.1fr 1fr;
+    }
+    .footer-row {
+        grid-column: span 3;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+}
+
+.grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.card h2 {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+}
+
+/* TIMER */
+.timer-card {
+    text-align: center;
+}
+
+.timer-display {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 5px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-status {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+.timer-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.timer-modes {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-mode {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-mode.active {
+    background: var(--accent-blue);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+/* PROBABILIDADE */
+.prob-badge {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* CICLO DE ESTUDOS COMPACTADO */
+.cycle-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+}
+
+.cycle-step.active {
+    border-color: var(--accent-blue);
+    background-color: rgba(59, 130, 246, 0.08);
+}
+
+.cycle-step.completed {
+    opacity: 0.55;
+    border-color: var(--accent-green);
+}
+
+/* PROGRESS BAR */
+.progress-bar-bg {
+    background-color: var(--bg-dark);
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease-out;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+}
+
+.stat-box {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+/* FORMULÁRIO COMPACTO */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+select, input {
+    width: 100%;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+}
+
+/* BOTÕES */
+.btn {
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+}
+
+.btn-primary { background-color: var(--accent-blue); color: #fff; }
+.btn-secondary { background-color: var(--border-color); color: var(--text-primary); }
+.btn-danger { background-color: var(--accent-red); color: #fff; }
+.btn-success { background-color: var(--accent-green); color: #fff; }
+.btn-block { width: 100%; }
+
+.btn-danger-outline {
+    background: transparent;
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+}
+
+.btn-danger-outline:hover {
+    background-color: var(--accent-red);
+    color: #fff;
+}
+
+/* LISTAS DE HISTÓRICO */
+.subject-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+.subject-row:last-of-type {
+    border-bottom: none;
+}
+
+.sub-title {
+    font-weight: 600;
+}
+
+.sub-details {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.sub-acc {
+    text-align: right;
+    font-weight: 700;
+}
+
+.acc-high { color: var(--accent-green); }
+.acc-mid { color: #f59e0b; }
+.acc-low { color: var(--accent-red); }
+
+.btn-delete-log {
+    background: transparent;
+    border: none;
+    color: var(--accent-red);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 3px;
+    transition: transform 0.1s ease;
+}
+
+.btn-delete-log:hover {
+    transform: scale(1.2);
+}
+
+/* ESTILOS DE COR DE PROBABILIDADE */
+.prob-badge.red { color: var(--accent-red); }
+.prob-badge.yellow { color: #f59e0b; }
+.prob-badge.green { color: var(--accent-green); }
+.bg-red { background-color: var(--accent-red) !important; }
+.bg-yellow { background-color: #f59e0b !important; }
+.bg-green { background-color: var(--accent-green) !important; }
