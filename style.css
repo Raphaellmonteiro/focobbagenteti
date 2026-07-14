@@ -66,6 +66,9 @@ body {
         grid-template-columns: 1fr 1fr;
         gap: 15px;
     }
+    .footer-row-full {
+        grid-column: span 3;
+    }
 }
 
 .grid-column {
@@ -466,4 +469,92 @@ select:focus, input:focus {
     border-color: var(--accent-green);
     color: var(--accent-green);
     background-color: rgba(16, 185, 129, 0.08);
+}
+
+/* BADGE DE DESEMPENHO DENTRO DA PILL DE TÓPICO */
+.topic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.topic-acc {
+    font-weight: 700;
+    font-size: 0.66rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.topic-acc.high { color: var(--accent-green); border-color: var(--accent-green); }
+.topic-acc.mid { color: #f59e0b; border-color: #f59e0b; }
+.topic-acc.low { color: var(--accent-red); border-color: var(--accent-red); }
+
+/* DIAGNÓSTICO: PONTOS FORTES E FRACOS POR ASSUNTO */
+.sw-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 700px) {
+    .sw-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.sw-col-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sw-col-title.strong { color: var(--accent-green); }
+.sw-col-title.weak { color: var(--accent-red); }
+
+.sw-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.82rem;
+    gap: 10px;
+}
+
+.sw-item:last-of-type {
+    border-bottom: none;
+}
+
+.sw-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.sw-item-topic {
+    font-weight: 600;
+}
+
+.sw-item-subject {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.sw-item-acc {
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.sw-empty {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 15px 0;
 }
