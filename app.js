@@ -207,6 +207,37 @@ function getEssayStatus() {
     return { label: `🟢 APTO (${latest.score} pts)`, className: 'apt' };
 }
 
+// MÉDIA E TENDÊNCIA DAS REDAÇÕES — mostra a EVOLUÇÃO ao longo do tempo (diferente do status isolado acima,
+// que só olha a última nota). Aqui sim entra a média histórica, para você acompanhar seu caminho.
+function getEssayTrend() {
+    const essays = appState.essays;
+    if (essays.length === 0) {
+        return { text: '', className: '' };
+    }
+    const average = essays.reduce((sum, e) => sum + e.score, 0) / essays.length;
+    const averageText = `Média geral: ${average.toFixed(1)} pts (${essays.length} redaç${essays.length === 1 ? 'ão' : 'ões'})`;
+
+    if (essays.length < 2) {
+        return { text: averageText, className: '' };
+    }
+
+    // essays[0] = mais recente, essays[1] = anterior a ela
+    const diff = essays[0].score - essays[1].score;
+    let trendText = '';
+    let className = '';
+    if (diff > 0) {
+        trendText = ` · ↑ subiu ${diff} pts vs. anterior`;
+        className = 'trend-up';
+    } else if (diff < 0) {
+        trendText = ` · ↓ caiu ${Math.abs(diff)} pts vs. anterior`;
+        className = 'trend-down';
+    } else {
+        trendText = ' · manteve a nota anterior';
+    }
+
+    return { text: averageText + trendText, className };
+}
+
 function updateDashboard() {
     const stats = {
         ti: { solved: 0, correct: 0 },
@@ -266,6 +297,12 @@ function updateDashboard() {
     const essayStatusBadge = document.getElementById('essay-status-badge');
     essayStatusBadge.textContent = essayStatus.label;
     essayStatusBadge.className = `essay-status-badge ${essayStatus.className}`;
+
+    // Média e tendência das redações (evolução ao longo do tempo)
+    const essayTrend = getEssayTrend();
+    const essayTrendLine = document.getElementById('essay-trend-line');
+    essayTrendLine.textContent = essayTrend.text;
+    essayTrendLine.className = `essay-trend-line ${essayTrend.className}`;
 
     // Estatísticas superiores
     document.getElementById('total-solved').textContent = totalSolved;
