@@ -140,10 +140,26 @@ const subjectList = document.getElementById('subject-list');
 const recentLogsDiv = document.getElementById('recent-logs');
 const cycleStepsDiv = document.getElementById('cycle-steps');
 const btnAdvanceCycle = document.getElementById('btn-advance-cycle');
+const subjectSelect = document.getElementById('subject');
+const topicSelect = document.getElementById('topic');
+const strengthsWeaknessesDiv = document.getElementById('strengths-weaknesses');
 
 const btnSaveEssay = document.getElementById('btn-save-essay');
 const essayThemeInput = document.getElementById('essay-theme');
 const essayScoreInput = document.getElementById('essay-score');
+
+// PREENCHE O SELECT DE ASSUNTO conforme a matéria escolhida, usando os tópicos reais do edital (SYLLABUS).
+// Isso é o que permite depois calcular acerto POR ASSUNTO (não só por matéria) e montar o raio-x de pontos fortes/fracos.
+function populateTopicSelect(subjectKey) {
+    const topics = SYLLABUS[subjectKey] || [];
+    let optionsHtml = '<option value="">📌 Geral (assunto não especificado)</option>';
+    optionsHtml += topics.map((topicName, index) => `<option value="${index}">${topicName}</option>`).join('');
+    topicSelect.innerHTML = optionsHtml;
+}
+
+subjectSelect.addEventListener('change', () => {
+    populateTopicSelect(subjectSelect.value);
+});
 
 function saveToLocalStorage() {
     localStorage.setItem('bb_study_state_v5', JSON.stringify({
@@ -292,6 +308,13 @@ function updateDashboard() {
         atualidades: { solved: 0, correct: 0 }
     };
 
+    // topicStats[subject] = array paralelo a SYLLABUS[subject], com {solved, correct} por assunto.
+    // Alimentado apenas pelos lançamentos que informaram um assunto específico (não "Geral").
+    const topicStats = {};
+    for (const key in SYLLABUS) {
+        topicStats[key] = SYLLABUS[key].map(() => ({ solved: 0, correct: 0 }));
+    }
+
     let totalSolved = 0;
     let totalCorrect = 0;
 
@@ -301,6 +324,11 @@ function updateDashboard() {
             stats[log.subject].correct += log.correct;
             totalSolved += log.solved;
             totalCorrect += log.correct;
+
+            if (log.topicIndex !== undefined && log.topicIndex !== null && topicStats[log.subject] && topicStats[log.subject][log.topicIndex]) {
+                topicStats[log.subject][log.topicIndex].solved += log.solved;
+                topicStats[log.subject][log.topicIndex].correct += log.correct;
+            }
         }
     });
 
@@ -318,7 +346,18 @@ function updateDashboard() {
             const topicId = `${key}-${index}`;
             const status = appState.topicStatus[topicId] || 'pending';
             const icon = status === 'reviewed' ? '🟢' : status === 'studying' ? '🟡' : '⬜';
-            return `<button type="button" class="topic-pill ${status}" onclick="cycleTopicStatus('${topicId}')" title="Clique para mudar o status">${icon} ${topicName}</button>`;
+
+            const tStat = topicStats[key][index];
+            let accBadge = '';
+            if (tStat.solved > 0) {
+                const tAcc = Math.round((tStat.correct / tStat.solved) * 100);
+                let accClass = 'low';
+                if (tAcc >= 70) accClass = 'high';
+                else if (tAcc >= 50) accClass = 'mid';
+                accBadge = `<span class="topic-acc ${accClass}">${tAcc}% (${tStat.solved}q)</span>`;
+            }
+
+            return `<button type="button" class="topic-pill ${status}" onclick="cycleTopicStatus('${topicId}')" title="Clique para mudar o status de cobertura">${icon} ${topicName}${accBadge}</button>`;
         }).join('');
 
         const reviewedCount = topics.filter((_, index) => appState.topicStatus[`${key}-${index}`] === 'reviewed').length;
@@ -389,6 +428,70 @@ function updateDashboard() {
 
     renderCycle();
     renderRecentLogs();
+    renderStrengthsWeaknesses(topicStats);
+}
+
+// DIAGNÓSTICO DE PONTOS FORTES E FRACOS: junta todos os assuntos (de todas as matérias) que já têm
+// pelo menos MIN_SAMPLE questões lançadas, ordena por taxa de acerto e mostra os melhores e os piores.
+// Isso é o que responde "onde eu erro e onde eu acerto", em vez de só olhar a matéria inteira.
+function renderStrengthsWeaknesses(topicStats) {
+    const MIN_SAMPLE = 3;
+    const flatTopics = [];
+
+    for (const subjectKey in topicStats) {
+        topicStats[subjectKey].forEach((tStat, index) => {
+            if (tStat.solved >= MIN_SAMPLE) {
+                flatTopics.push({
+                    subject: SUBJECT_MAP[subjectKey],
+                    topicName: SYLLABUS[subjectKey][index],
+                    solved: tStat.solved,
+                    correct: tStat.correct,
+                    accuracy: Math.round((tStat.correct / tStat.solved) * 100)
+                });
+            }
+        });
+    }
+
+    if (flatTopics.length === 0) {
+        strengthsWeaknessesDiv.innerHTML = `
+            <div class="sw-empty">
+                Ainda não há assuntos com pelo menos ${MIN_SAMPLE} questões lançadas. Ao registrar questões, escolha o assunto específico (não só "Geral") para começar a ver seus pontos fortes e fracos aqui.
+            </div>
+        `;
+        return;
+    }
+
+    const sortedDesc = [...flatTopics].sort((a, b) => b.accuracy - a.accuracy);
+    const strongest = sortedDesc.slice(0, 5);
+    const weakest = [...flatTopics].sort((a, b) => a.accuracy - b.accuracy).slice(0, 5);
+
+    function renderList(list) {
+        return list.map(t => {
+            let accClass = 'acc-low';
+            if (t.accuracy >= 70) accClass = 'acc-high';
+            else if (t.accuracy >= 50) accClass = 'acc-mid';
+            return `
+                <div class="sw-item">
+                    <div class="sw-item-info">
+                        <span class="sw-item-topic">${t.topicName}</span>
+                        <span class="sw-item-subject">${t.subject} · ${t.solved} questões</span>
+                    </div>
+                    <span class="sw-item-acc ${accClass}">${t.accuracy}%</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    strengthsWeaknessesDiv.innerHTML = `
+        <div class="sw-col">
+            <div class="sw-col-title strong">💪 Pontos Fortes (maior acerto)</div>
+            ${renderList(strongest)}
+        </div>
+        <div class="sw-col">
+            <div class="sw-col-title weak">🚨 Pontos Fracos (foco nos estudos)</div>
+            ${renderList(weakest)}
+        </div>
+    `;
 }
 
 function renderCycle() {
@@ -449,10 +552,11 @@ function renderRecentLogs() {
             if (accuracy >= 70) badgeClass = 'high';
             else if (accuracy >= 50) badgeClass = 'mid';
 
+            const subjectLabel = item.topicName ? `${SUBJECT_MAP[item.subject]} · ${item.topicName}` : SUBJECT_MAP[item.subject];
             recentLogsDiv.innerHTML += `
                 <div class="history-row">
                     <div class="history-info">
-                        <span class="history-subj"><span class="history-type-tag questao">Questões</span>${SUBJECT_MAP[item.subject]}</span>
+                        <span class="history-subj"><span class="history-type-tag questao">Questões</span>${subjectLabel}</span>
                         <span class="history-meta">${item.solved} resolvidas / ${item.correct} acertos (${item.date})</span>
                     </div>
                     <div class="history-action">
@@ -507,6 +611,9 @@ window.cycleTopicStatus = function(topicId) {
 questoesForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const subject = document.getElementById('subject').value;
+    const topicRaw = topicSelect.value; // '' = Geral, senão índice do tópico dentro de SYLLABUS[subject]
+    const topicIndex = topicRaw === '' ? null : parseInt(topicRaw);
+    const topicName = topicIndex !== null ? SYLLABUS[subject][topicIndex] : null;
     const solvedVal = parseInt(document.getElementById('solved').value);
     const correctVal = parseInt(document.getElementById('correct').value);
 
@@ -521,6 +628,8 @@ questoesForm.addEventListener('submit', (e) => {
     const newLog = {
         id: Date.now().toString(),
         subject,
+        topicIndex,
+        topicName,
         solved: solvedVal,
         correct: correctVal,
         date: formattedDate
@@ -530,6 +639,7 @@ questoesForm.addEventListener('submit', (e) => {
     saveToLocalStorage();
     updateDashboard();
     questoesForm.reset();
+    populateTopicSelect(subjectSelect.value);
 });
 
 btnSaveEssay.addEventListener('click', () => {
@@ -562,5 +672,6 @@ btnSaveEssay.addEventListener('click', () => {
 window.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
     updateTimerDisplay();
+    populateTopicSelect(subjectSelect.value);
     updateDashboard();
 });
