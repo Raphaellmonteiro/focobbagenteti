@@ -120,7 +120,7 @@
                 </form>
             </section>
 
-            <!-- REGISTRAR REDAÇÃO -->
+            <!-- SEÇÃO DE REDAÇÃO (CORRIGIDA PELA IA + LINK DO DRIVE) -->
             <section class="card essay-card">
                 <h2>✍️ Notas de Redação</h2>
                 <div class="essay-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
@@ -131,7 +131,15 @@
                         <input type="number" id="essay-score" min="0" max="100" placeholder="Nota" style="padding: 8px 10px; font-size: 0.85rem;">
                     </div>
                 </div>
-                <button id="btn-save-essay" class="btn btn-primary btn-block" style="padding: 8px 12px; font-size: 0.85rem;">Salvar Nota</button>
+                
+                <!-- Botões de Ação lado a lado para aproveitar o espaço -->
+                <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 10px; margin-bottom: 5px;">
+                    <button id="btn-save-essay" class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85rem;">Salvar Nota</button>
+                    <a href="https://drive.google.com/drive/folders/1cfASlXW7xarPeeSHELzOp01l3MZF9H8P?usp=drive_link" target="_blank" class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;" title="Abrir pasta de redações no Google Drive">
+                        📂
+                    </a>
+                </div>
+                
                 <div id="essay-history" style="margin-top: 10px; max-height: 80px; overflow-y: auto;"></div>
             </section>
         </div>
