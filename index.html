@@ -121,6 +121,11 @@
                             <option value="atualidades">Atualidades Financeiras</option>
                         </select>
                     </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <select id="topic" style="padding: 8px 10px; font-size: 0.85rem;">
+                            <!-- Opções injetadas dinamicamente via JS conforme a matéria escolhida -->
+                        </select>
+                    </div>
                     <div class="form-row" style="gap: 10px; margin-bottom: 5px;">
                         <div class="form-group" style="margin-bottom: 5px;">
                             <input type="number" id="solved" min="1" placeholder="Resolvidas" style="padding: 8px 10px; font-size: 0.85rem;" required>
@@ -169,6 +174,19 @@
             <section class="card subjects-card">
                 <h2>📊 Desempenho detalhado por Matéria</h2>
                 <div class="subject-list" id="subject-list"></div>
+            </section>
+        </div>
+
+        <!-- DIAGNÓSTICO: PONTOS FORTES E FRACOS POR ASSUNTO -->
+        <div class="footer-row-full">
+            <section class="card insights-card">
+                <h2>🎯 Pontos Fortes e Fracos por Assunto</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    Baseado no assunto que você marca ao lançar cada questão. Precisa de pelo menos 3 questões no assunto para entrar no ranking (evita distorção por amostra pequena).
+                </p>
+                <div id="strengths-weaknesses" class="sw-grid">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
             </section>
         </div>
 
