@@ -7,6 +7,47 @@ const SUBJECT_MAP = {
     atualidades: 'Atualidades Financeiras'
 };
 
+// TÓPICOS REAIS DO EDITAL (Cesgranrio - BB Escriturário, Agente de Tecnologia) POR MATÉRIA.
+// Base pro checklist de cobertura: o que já foi estudado x o que ainda falta.
+const SYLLABUS = {
+    ti: [
+        'Lógica de Programação',
+        'Estruturas de Dados (pilha, fila, lista, árvore)',
+        'Python para Dados/IA (Pandas, NumPy, Scikit-learn)',
+        'Aprendizagem de Máquina (supervisionado/não supervisionado, PLN)',
+        'Banco de Dados',
+        'Redes de Computadores',
+        'Segurança da Informação / LGPD / Sigilo Bancário',
+        'Sistemas Operacionais e Ferramentas de Desenvolvimento'
+    ],
+    portugues: [
+        'Interpretação de Texto',
+        'Ortografia Oficial e Acentuação/Crase',
+        'Classes e Emprego de Palavras',
+        'Sintaxe (concordância, regência, pontuação)'
+    ],
+    matematica: [
+        'Números Inteiros, Racionais e Reais',
+        'Razões, Proporções e Regra de Três',
+        'Lógica Proposicional e Noções de Conjuntos',
+        'Funções, Determinantes e Sistemas Lineares',
+        'Sequências, PA e PG',
+        'Probabilidade e Estatística'
+    ],
+    bancarios: [
+        'Sistema Financeiro Nacional',
+        'Produtos e Serviços Bancários',
+        'Ética e Legislação Anticorrupção'
+    ],
+    ingles: [
+        'Compreensão de Texto (Reading Comprehension)',
+        'Vocabulário Técnico e Bancário'
+    ],
+    atualidades: [
+        'Conjuntura Econômica e Financeira Recente'
+    ]
+};
+
 const STUDY_CYCLE = [
     { key: 'ti', name: 'Tecnologia da Informação' },
     { key: 'portugues', name: 'Língua Portuguesa' },
@@ -26,7 +67,8 @@ let appState = {
     },
     currentCycleIndex: 0,
     logs: [],
-    essays: []
+    essays: [],
+    topicStatus: {} // ex: { "ti-0": "reviewed", "portugues-2": "studying" }
 };
 
 // --- POMODORO ---
@@ -107,7 +149,8 @@ function saveToLocalStorage() {
     localStorage.setItem('bb_study_state_v5', JSON.stringify({
         logs: appState.logs,
         essays: appState.essays,
-        currentCycleIndex: appState.currentCycleIndex
+        currentCycleIndex: appState.currentCycleIndex,
+        topicStatus: appState.topicStatus
     }));
 }
 
@@ -118,6 +161,7 @@ function loadFromLocalStorage() {
         if (parsed.logs) appState.logs = parsed.logs;
         if (parsed.essays) appState.essays = parsed.essays;
         if (parsed.currentCycleIndex !== undefined) appState.currentCycleIndex = parsed.currentCycleIndex;
+        if (parsed.topicStatus) appState.topicStatus = parsed.topicStatus;
     }
 }
 
@@ -260,7 +304,7 @@ function updateDashboard() {
         }
     });
 
-    // Renderizar painel de matérias
+    // Renderizar painel de matérias (desempenho + cobertura de tópicos do edital)
     subjectList.innerHTML = '';
     for (const key in stats) {
         const item = stats[key];
@@ -269,13 +313,27 @@ function updateDashboard() {
         if (accuracy >= 70) accuracyClass = 'acc-high';
         else if (accuracy >= 50) accuracyClass = 'acc-mid';
 
+        const topics = SYLLABUS[key] || [];
+        const topicsHtml = topics.map((topicName, index) => {
+            const topicId = `${key}-${index}`;
+            const status = appState.topicStatus[topicId] || 'pending';
+            const icon = status === 'reviewed' ? '🟢' : status === 'studying' ? '🟡' : '⬜';
+            return `<button type="button" class="topic-pill ${status}" onclick="cycleTopicStatus('${topicId}')" title="Clique para mudar o status">${icon} ${topicName}</button>`;
+        }).join('');
+
+        const reviewedCount = topics.filter((_, index) => appState.topicStatus[`${key}-${index}`] === 'reviewed').length;
+        const coverageLabel = topics.length > 0 ? `${reviewedCount}/${topics.length} tópicos revisados` : '';
+
         subjectList.innerHTML += `
-            <div class="subject-row">
-                <div>
-                    <div class="sub-title">${SUBJECT_MAP[key]}</div>
-                    <div class="sub-details">${item.solved} resolvidas / ${item.correct} acertos</div>
+            <div class="subject-row subject-row-expanded">
+                <div class="subject-row-top">
+                    <div>
+                        <div class="sub-title">${SUBJECT_MAP[key]}</div>
+                        <div class="sub-details">${item.solved} resolvidas / ${item.correct} acertos ${coverageLabel ? '· ' + coverageLabel : ''}</div>
+                    </div>
+                    <div class="sub-acc ${accuracyClass}">${accuracy}%</div>
                 </div>
-                <div class="sub-acc ${accuracyClass}">${accuracy}%</div>
+                ${topics.length > 0 ? `<div class="topic-pill-list">${topicsHtml}</div>` : ''}
             </div>
         `;
     }
@@ -315,6 +373,19 @@ function updateDashboard() {
     const progressPercent = Math.min(Math.round((totalSolved / weeklyGoal) * 100), 100);
     document.getElementById('overall-progress').style.width = `${progressPercent}%`;
     document.getElementById('progress-text').textContent = `${progressPercent}% (${totalSolved} / ${weeklyGoal})`;
+
+    // Cobertura geral do edital (todos os tópicos, todas as matérias)
+    let totalTopics = 0;
+    let reviewedTopics = 0;
+    for (const key in SYLLABUS) {
+        SYLLABUS[key].forEach((_, index) => {
+            totalTopics++;
+            if (appState.topicStatus[`${key}-${index}`] === 'reviewed') reviewedTopics++;
+        });
+    }
+    const coveragePercent = totalTopics > 0 ? Math.round((reviewedTopics / totalTopics) * 100) : 0;
+    document.getElementById('coverage-progress').style.width = `${coveragePercent}%`;
+    document.getElementById('coverage-text').textContent = `${coveragePercent}% (${reviewedTopics} / ${totalTopics} tópicos)`;
 
     renderCycle();
     renderRecentLogs();
@@ -422,6 +493,15 @@ window.deleteEssay = function(id) {
         saveToLocalStorage();
         updateDashboard();
     }
+};
+
+// COBERTURA DO EDITAL: avança o status de um tópico ao clicar (Não iniciado -> Estudando -> Revisado -> Não iniciado)
+window.cycleTopicStatus = function(topicId) {
+    const current = appState.topicStatus[topicId] || 'pending';
+    const next = current === 'pending' ? 'studying' : current === 'studying' ? 'reviewed' : 'pending';
+    appState.topicStatus[topicId] = next;
+    saveToLocalStorage();
+    updateDashboard();
 };
 
 questoesForm.addEventListener('submit', (e) => {
