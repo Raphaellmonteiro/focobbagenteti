@@ -14,6 +14,30 @@
         <div class="subtitle">Estratégia Flexível por Ciclo de Estudos</div>
     </header>
 
+    <div class="status-bar">
+        <div class="status-pill" id="streak-pill">
+            <span class="status-pill-icon">🔥</span>
+            <div>
+                <div class="status-pill-value" id="streak-value">0 dias</div>
+                <div class="status-pill-label">seguidos estudando</div>
+            </div>
+        </div>
+        <div class="status-pill">
+            <span class="status-pill-icon">📍</span>
+            <div>
+                <div class="status-pill-value" id="resume-value">Comece agora</div>
+                <div class="status-pill-label">retome de onde parou</div>
+            </div>
+        </div>
+        <div class="status-pill" id="daily-goal-pill" onclick="editDailyGoal()" title="Clique para ajustar a meta mínima">
+            <span class="status-pill-icon" id="daily-goal-icon">⬜</span>
+            <div>
+                <div class="status-pill-value" id="daily-goal-value">0/5 questões</div>
+                <div class="status-pill-label">meta mínima de hoje</div>
+            </div>
+        </div>
+    </div>
+
     <main class="dashboard-grid">
         
         <!-- COLUNA 1: FOCO & STATUS -->
