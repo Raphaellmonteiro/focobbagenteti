@@ -133,6 +133,118 @@ body {
     width: auto;
 }
 
+/* BANCO DE QUESTÕES PARA REVISÃO */
+.qb-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 12px 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.qb-filters select, .qb-filters input {
+    width: auto;
+}
+
+.qb-list {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.qb-item {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background-color: var(--bg-dark);
+}
+
+.qb-item.reviewed {
+    opacity: 0.55;
+}
+
+.qb-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.qb-item-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+}
+
+.qb-result-badge {
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+
+.qb-result-badge.wrong {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+}
+
+.qb-result-badge.doubt {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.qb-question-id {
+    font-family: monospace;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+}
+
+.qb-item-subject {
+    color: var(--text-secondary);
+}
+
+.qb-item-note {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+}
+
+.qb-item-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.qb-item-actions .btn {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    width: auto;
+}
+
+.qb-item-date {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.qb-empty {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 20px 0;
+}
+
 /* CONTAINER PRINCIPAL EM GRID DE 3 COLUNAS */
 .dashboard-grid {
     max-width: 1300px;
