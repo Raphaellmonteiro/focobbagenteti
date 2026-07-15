@@ -105,6 +105,34 @@ body {
     color: var(--accent-green);
 }
 
+/* SUGESTÃO ADAPTATIVA DE AUMENTO DE META */
+.goal-suggestion-banner {
+    max-width: 1300px;
+    margin: 0 auto 15px auto;
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--accent-blue);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.82rem;
+    flex-wrap: wrap;
+}
+
+.goal-suggestion-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.goal-suggestion-actions .btn {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    width: auto;
+}
+
 /* CONTAINER PRINCIPAL EM GRID DE 3 COLUNAS */
 .dashboard-grid {
     max-width: 1300px;
