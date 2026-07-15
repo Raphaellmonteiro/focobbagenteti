@@ -140,6 +140,27 @@ body {
     border-color: var(--accent-blue);
 }
 
+.session-end-message {
+    font-size: 0.75rem;
+    color: var(--accent-green);
+    text-align: center;
+    margin-top: 8px;
+    min-height: 1em;
+    line-height: 1.4;
+}
+
+.cycle-step-progress {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 2px;
+}
+
+.cycle-step.active .cycle-step-progress {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
 /* PROBABILIDADE */
 .prob-badge {
     font-size: 2.8rem;
