@@ -224,6 +224,74 @@
             </section>
         </div>
 
+        <!-- BANCO DE QUESTÕES PARA REVISÃO: guarda o ID da questão no Estratégia + acerto/erro + anotação,
+             pra você revisar depois filtrando por matéria/assunto/status, sem precisar confiar na memória. -->
+        <div class="footer-row-full">
+            <section class="card qb-card">
+                <h2>🧠 Banco de Questões para Revisar</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    Marque aqui as questões específicas que valem a pena revisar (principalmente as que errou). Guarde o ID dela no Estratégia + uma anotação rápida do porquê errou. O objetivo não é registrar TODAS as questões — é não deixar escapar aquela que já te pegou uma vez.
+                </p>
+
+                <form id="qb-form" class="qb-form">
+                    <div class="form-row" style="gap: 10px; margin-bottom: 10px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select id="qb-subject" style="padding: 8px 10px; font-size: 0.85rem;" required>
+                                <option value="ti">Tecnologia da Informação</option>
+                                <option value="portugues">Língua Portuguesa</option>
+                                <option value="matematica">Matemática & Estatística</option>
+                                <option value="bancarios">Conhecimentos Bancários</option>
+                                <option value="ingles">Língua Inglesa</option>
+                                <option value="atualidades">Atualidades Financeiras</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select id="qb-topic" style="padding: 8px 10px; font-size: 0.85rem;">
+                                <!-- Injetado via JS conforme a matéria -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row" style="gap: 10px; margin-bottom: 10px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <input type="text" id="qb-question-id" placeholder="ID da questão no Estratégia" style="padding: 8px 10px; font-size: 0.85rem;" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select id="qb-result" style="padding: 8px 10px; font-size: 0.85rem;">
+                                <option value="wrong">🔴 Errei</option>
+                                <option value="doubt">🟡 Acertei, mas na dúvida/chute</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <textarea id="qb-note" rows="2" placeholder="Anotação: por que errou, pegadinha, conceito que faltou..." style="width: 100%; background-color: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 10px; border-radius: 5px; font-family: var(--font-family); font-size: 0.85rem; resize: vertical;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-block" style="padding: 8px 12px; font-size: 0.85rem;">Marcar para Revisão</button>
+                </form>
+
+                <div class="qb-filters">
+                    <select id="qb-filter-subject" style="padding: 6px 8px; font-size: 0.8rem;">
+                        <option value="">Todas as matérias</option>
+                        <option value="ti">Tecnologia da Informação</option>
+                        <option value="portugues">Língua Portuguesa</option>
+                        <option value="matematica">Matemática & Estatística</option>
+                        <option value="bancarios">Conhecimentos Bancários</option>
+                        <option value="ingles">Língua Inglesa</option>
+                        <option value="atualidades">Atualidades Financeiras</option>
+                    </select>
+                    <select id="qb-filter-status" style="padding: 6px 8px; font-size: 0.8rem;">
+                        <option value="pending">📌 Não revisadas</option>
+                        <option value="reviewed">✅ Já revisadas</option>
+                        <option value="all">Todas</option>
+                    </select>
+                    <input type="text" id="qb-filter-search" placeholder="Buscar por ID da questão..." style="padding: 6px 8px; font-size: 0.8rem; flex: 1; min-width: 140px;">
+                </div>
+
+                <div id="qb-list" class="qb-list">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
+            </section>
+        </div>
+
     </main>
 
     <script src="app.js"></script>
