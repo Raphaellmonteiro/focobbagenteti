@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RM Tecnologia - BB Agente de TI Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">RM TECNOLOGIA</div>
+        <h1>Foco BB: Agente de TI</h1>
+        <div class="subtitle">Estratégia Flexível por Ciclo de Estudos</div>
+        <nav class="page-nav">
+            <span class="page-nav-link active">📊 Dashboard</span>
+            <a href="banco-questoes.html" class="page-nav-link">🧠 Banco de Questões & Simulador</a>
+        </nav>
+    </header>
+
+    <div class="status-bar">
+        <div class="status-pill" id="streak-pill">
+            <span class="status-pill-icon">🔥</span>
+            <div>
+                <div class="status-pill-value" id="streak-value">0 dias</div>
+                <div class="status-pill-label">seguidos estudando</div>
+            </div>
+        </div>
+        <div class="status-pill">
+            <span class="status-pill-icon">📍</span>
+            <div>
+                <div class="status-pill-value" id="resume-value">Comece agora</div>
+                <div class="status-pill-label">retome de onde parou</div>
+            </div>
+        </div>
+        <div class="status-pill" id="daily-goal-pill" onclick="editDailyGoal()" title="Clique para ajustar a meta mínima">
+            <span class="status-pill-icon" id="daily-goal-icon">⬜</span>
+            <div>
+                <div class="status-pill-value" id="daily-goal-value">0/5 questões</div>
+                <div class="status-pill-label">meta mínima de hoje</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="goal-suggestion-banner" id="goal-suggestion-banner" style="display:none;">
+        <span id="goal-suggestion-text"></span>
+        <div class="goal-suggestion-actions">
+            <button id="btn-accept-goal-increase" class="btn btn-primary">Aumentar</button>
+            <button id="btn-dismiss-goal-increase" class="btn btn-secondary">Manter como está</button>
+        </div>
+    </div>
+
+    <main class="dashboard-grid">
+        
+        <!-- COLUNA 1: FOCO & STATUS -->
+        <div class="grid-column">
+            <!-- CRONÔMETRO -->
+            <section class="card timer-card">
+                <h2>⏱️ Cronômetro Pomodoro</h2>
+                <div class="timer-display" id="timer">25:00</div>
+                <div class="timer-status" id="timer-status">Foco total nas questões!</div>
+                <div class="timer-controls">
+                    <button id="btn-start" class="btn btn-primary">Iniciar</button>
+                    <button id="btn-pause" class="btn btn-secondary">Pausar</button>
+                    <button id="btn-reset" class="btn btn-danger">Resetar</button>
+                </div>
+                <div class="timer-modes">
+                    <button id="mode-study" class="btn-mode active">Foco (25m)</button>
+                    <button id="mode-break" class="btn-mode">Pausa (5m)</button>
+                </div>
+                <button id="btn-end-session" class="btn btn-secondary btn-block" style="margin-top: 10px; font-size: 0.78rem;">🌙 Encerrar sessão de hoje</button>
+                <div id="session-end-message" class="session-end-message"></div>
+            </section>
+
+            <!-- PROBABILIDADE REAL -->
+            <section class="card probability-card">
+                <h2>📊 Probabilidade de Vaga</h2>
+                <div class="probability-container" style="text-align: center; margin: 10px 0;">
+                    <div class="prob-badge" id="prob-badge">0%</div>
+                    <div class="progress-bar-bg" style="margin: 12px 0 8px 0; height: 10px;">
+                        <div class="progress-bar-fill" id="prob-progress" style="width: 0%; background: var(--accent-red);"></div>
+                    </div>
+                    <p class="prob-feedback" id="prob-feedback" style="font-size: 0.85rem;">Cadastre questões para gerar seu índice.</p>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary); line-height: 1.3; border-top: 1px solid var(--border-color); padding-top: 8px;">
+                    *Cálculo baseado exclusivamente no desempenho em questões objetivas: taxa de acerto geral, volume acumulado (meta de amostragem: 1.000q) e penalidade de rendimento em TI.
+                </div>
+
+                <!-- STATUS DA REDAÇÃO (ISOLADO, NÃO AFETA A PROBABILIDADE ACIMA) -->
+                <div class="essay-status-block">
+                    <div id="essay-status-badge" class="essay-status-badge">✍️ Nenhuma redação registrada ainda</div>
+                    <div id="essay-trend-line" class="essay-trend-line"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- COLUNA 2: CICLO DE ESTUDOS -->
+        <div class="grid-column">
+            <section class="card cycle-card">
+                <h2>🔄 Fila do Ciclo Ativo</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    Sem dias fixos! Siga a sequência abaixo.
+                </p>
+                <div class="cycle-steps" id="cycle-steps">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
+                <button id="btn-advance-cycle" class="btn btn-primary btn-block" style="margin-top: 12px;">Avançar Ciclo</button>
+            </section>
+        </div>
+
+        <!-- COLUNA 3: ENTRADAS & MÉTRICAS RÁPIDAS -->
+        <div class="grid-column">
+            <!-- PROGRESSO GERAL -->
+            <section class="card progress-card">
+                <h2>📈 Evolução Geral</h2>
+                <div class="progress-container" style="margin-bottom: 15px;">
+                    <div class="progress-bar-wrapper" style="margin-bottom: 10px;">
+                        <span class="progress-label" style="font-size: 0.8rem;">Meta de Volume</span>
+                        <div class="progress-bar-bg" style="height: 10px;">
+                            <div class="progress-bar-fill" id="overall-progress" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-percentage" id="progress-text" style="font-size: 0.75rem; margin-top: 3px;">0% (0 / 1.000)</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <span class="progress-label" style="font-size: 0.8rem;">Cobertura do Edital</span>
+                        <div class="progress-bar-bg" style="height: 10px;">
+                            <div class="progress-bar-fill" id="coverage-progress" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-percentage" id="coverage-text" style="font-size: 0.75rem; margin-top: 3px;">0% (0 / 0 tópicos)</span>
+                    </div>
+                </div>
+                <div class="stats-grid" style="gap: 10px;">
+                    <div class="stat-box" style="padding: 10px;">
+                        <span class="stat-num" id="total-solved" style="font-size: 1.2rem;">0</span>
+                        <span class="stat-label">Feitas</span>
+                    </div>
+                    <div class="stat-box" style="padding: 10px;">
+                        <span class="stat-num" id="total-correct" style="font-size: 1.2rem;">0</span>
+                        <span class="stat-label">Acertos</span>
+                    </div>
+                    <div class="stat-box" style="padding: 10px;">
+                        <span class="stat-num" id="accuracy-rate" style="font-size: 1.2rem;">0%</span>
+                        <span class="stat-label">Taxa</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REGISTRAR QUESTÕES -->
+            <section class="card form-card">
+                <h2>📝 Registrar Questões</h2>
+                <form id="questoes-form">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <select id="subject" style="padding: 8px 10px; font-size: 0.85rem;" required>
+                            <option value="ti">Tecnologia da Informação</option>
+                            <option value="portugues">Língua Portuguesa</option>
+                            <option value="matematica">Matemática & Estatística</option>
+                            <option value="bancarios">Conhecimentos Bancários</option>
+                            <option value="ingles">Língua Inglesa</option>
+                            <option value="atualidades">Atualidades Financeiras</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <select id="topic" style="padding: 8px 10px; font-size: 0.85rem;">
+                            <!-- Opções injetadas dinamicamente via JS conforme a matéria escolhida -->
+                        </select>
+                    </div>
+                    <div class="form-row" style="gap: 10px; margin-bottom: 5px;">
+                        <div class="form-group" style="margin-bottom: 5px;">
+                            <input type="number" id="solved" min="1" placeholder="Resolvidas" style="padding: 8px 10px; font-size: 0.85rem;" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 5px;">
+                            <input type="number" id="correct" min="0" placeholder="Acertos" style="padding: 8px 10px; font-size: 0.85rem;" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block" style="padding: 8px 12px; font-size: 0.85rem;">Salvar</button>
+                </form>
+            </section>
+
+            <!-- REGISTRAR REDAÇÃO -->
+            <section class="card essay-card">
+                <h2>✍️ Notas de Redação</h2>
+                <div class="essay-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" id="essay-theme" placeholder="Tema" style="padding: 8px 10px; font-size: 0.85rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="number" id="essay-score" min="0" max="100" placeholder="Nota" style="padding: 8px 10px; font-size: 0.85rem;">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 10px;">
+                    <button id="btn-save-essay" class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85rem;">Salvar Nota</button>
+                    <a href="https://drive.google.com/drive/folders/1cfASlXW7xarPeeSHELzOp01l3MZF9H8P?usp=drive_link" target="_blank" class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.85rem; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;" title="Abrir pasta de redações no Google Drive">
+                        📂
+                    </a>
+                </div>
+            </section>
+        </div>
+
+        <!-- SEÇÃO DE RODAPÉ (LARGURA TOTAL): LINHA DO TEMPO UNIFICADA E DESEMPENHO -->
+        <div class="footer-row">
+            <section class="card history-card">
+                <h2>📋 Linha do Tempo de Estudos (Últimos Lançamentos)</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    Questões e Notas de Redação listadas em ordem cronológica. Use a lixeira para apagar erros.
+                </p>
+                <div id="recent-logs" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                    <!-- Histórico dinâmico unificado via JS -->
+                </div>
+            </section>
+
+            <section class="card subjects-card">
+                <h2>📊 Desempenho detalhado por Matéria</h2>
+                <div class="subject-list" id="subject-list"></div>
+            </section>
+        </div>
+
+        <!-- DIAGNÓSTICO: PONTOS FORTES E FRACOS POR ASSUNTO -->
+        <div class="footer-row-full">
+            <section class="card insights-card">
+                <h2>🎯 Pontos Fortes e Fracos por Assunto</h2>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    Baseado no assunto que você marca ao lançar cada questão. Precisa de pelo menos 3 questões no assunto para entrar no ranking (evita distorção por amostra pequena).
+                </p>
+                <div id="strengths-weaknesses" class="sw-grid">
+                    <!-- Injetado dinamicamente via JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- RESUMO DO BANCO DE QUESTÕES: a gestão completa (cadastrar, revisar, praticar em
+             modo simulado) mora na página dedicada banco-questoes.html. Aqui fica só o essencial
+             pra não competir por espaço com o resto do dashboard. -->
+        <div class="footer-row-full">
+            <a href="banco-questoes.html" class="card qb-summary-card">
+                <div class="qb-summary-icon">🧠</div>
+                <div class="qb-summary-text">
+                    <h2 style="border: none; margin-bottom: 4px;">Banco de Questões & Simulador</h2>
+                    <p>Cadastre questões (rápido ou completas, com alternativas), acompanhe o que já respondeu certo/errado e treine em modo Praticar ou Mini-Simulado.</p>
+                </div>
+                <div class="qb-summary-stats">
+                    <div class="qb-summary-stat">
+                        <span class="qb-summary-num" id="qr-summary-count">0</span>
+                        <span class="qb-summary-label">no banco</span>
+                    </div>
+                    <div class="qb-summary-stat">
+                        <span class="qb-summary-num" id="qr-summary-pending" style="color: var(--accent-red);">0</span>
+                        <span class="qb-summary-label">pra revisar</span>
+                    </div>
+                    <div class="qb-summary-stat">
+                        <span class="qb-summary-num" id="qr-summary-accuracy" style="color: var(--accent-green);">—</span>
+                        <span class="qb-summary-label">acerto no banco</span>
+                    </div>
+                </div>
+                <div class="qb-summary-cta">Abrir →</div>
+            </a>
+        </div>
+
+    </main>
+
+    <script src="shared-data.js"></script>
+    <script src="shared-storage.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
