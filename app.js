@@ -66,6 +66,10 @@ let appState = {
         currentMode: 'study'
     },
     currentCycleIndex: 0,
+    // Quantos pomodoros de FOCO já foram concluídos de verdade na etapa atual (meta: 2 por etapa).
+    // Existe pra imprevisto: se você só conseguir 1 dos 2 hoje e precisar parar, esse número fica salvo
+    // e na próxima vez você continua exatamente daqui, sem perder o que já foi feito nem precisar repetir.
+    cyclePomodorosDone: 0,
     logs: [],
     essays: [],
     topicStatus: {} // ex: { "ti-0": "reviewed", "portugues-2": "studying" }
@@ -96,8 +100,18 @@ function startTimer() {
         } else {
             clearInterval(appState.timer.intervalId);
             appState.timer.isRunning = false;
-            alert(appState.timer.currentMode === 'study' ? 'Hora da pausa de 5 minutos!' : 'De volta ao foco!');
-            resetTimer();
+
+            if (appState.timer.currentMode === 'study') {
+                // Pomodoro de foco concluído de verdade (não apenas iniciado) -> conta pra meta da etapa atual.
+                appState.cyclePomodorosDone++;
+                saveToLocalStorage();
+                updateDashboard();
+                alert('Pomodoro concluído! Hora da pausa de 5 minutos.');
+                setTimerMode('break');
+            } else {
+                alert('Pausa terminada! De volta ao foco.');
+                setTimerMode('study');
+            }
         }
     }, 1000);
 }
@@ -125,6 +139,7 @@ function setTimerMode(mode) {
         timerStatus.textContent = 'Descanse um pouco.';
     }
     resetTimer();
+    saveToLocalStorage();
 }
 
 btnStart.addEventListener('click', startTimer);
@@ -132,6 +147,20 @@ btnPause.addEventListener('click', pauseTimer);
 btnReset.addEventListener('click', resetTimer);
 modeStudy.addEventListener('click', () => setTimerMode('study'));
 modeBreak.addEventListener('click', () => setTimerMode('break'));
+
+// ENCERRAR SESSÃO DE HOJE: pra imprevistos onde não dá pra terminar o pomodoro de 25 min.
+// Não força terminar nada. Só pausa com segurança e confirma que o que já foi concluído está salvo -
+// na próxima vez o ciclo continua exatamente da mesma etapa e do mesmo contador de pomodoros,
+// sem repetir trabalho e sem empurrar pra frente uma etapa que ainda não foi de fato estudada.
+const btnEndSession = document.getElementById('btn-end-session');
+const sessionEndMessageDiv = document.getElementById('session-end-message');
+
+btnEndSession.addEventListener('click', () => {
+    pauseTimer();
+    saveToLocalStorage();
+    const step = STUDY_CYCLE[appState.currentCycleIndex];
+    sessionEndMessageDiv.textContent = `✅ Progresso salvo. Você já tem ${appState.cyclePomodorosDone}/2 pomodoros feitos em "${step.name}". Pode fechar tranquilo — na próxima vez é só continuar dessa mesma etapa.`;
+});
 
 
 // --- GESTÃO DE ESTUDOS ---
@@ -166,7 +195,9 @@ function saveToLocalStorage() {
         logs: appState.logs,
         essays: appState.essays,
         currentCycleIndex: appState.currentCycleIndex,
-        topicStatus: appState.topicStatus
+        cyclePomodorosDone: appState.cyclePomodorosDone,
+        topicStatus: appState.topicStatus,
+        timerMode: appState.timer.currentMode
     }));
 }
 
@@ -177,7 +208,9 @@ function loadFromLocalStorage() {
         if (parsed.logs) appState.logs = parsed.logs;
         if (parsed.essays) appState.essays = parsed.essays;
         if (parsed.currentCycleIndex !== undefined) appState.currentCycleIndex = parsed.currentCycleIndex;
+        if (parsed.cyclePomodorosDone !== undefined) appState.cyclePomodorosDone = parsed.cyclePomodorosDone;
         if (parsed.topicStatus) appState.topicStatus = parsed.topicStatus;
+        if (parsed.timerMode) appState.timer.currentMode = parsed.timerMode;
     }
 }
 
@@ -408,10 +441,12 @@ function updateDashboard() {
     const generalAccuracy = totalSolved > 0 ? Math.round((totalCorrect / totalSolved) * 100) : 0;
     document.getElementById('accuracy-rate').textContent = `${generalAccuracy}%`;
 
-    const weeklyGoal = 100;
-    const progressPercent = Math.min(Math.round((totalSolved / weeklyGoal) * 100), 100);
+    // A meta de volume exibida aqui tem que ser a MESMA usada no algoritmo de probabilidade (calculateProbability),
+    // senão o usuário vê "100% concluído" na barra enquanto o cálculo de chance real ainda considera amostra pequena.
+    const targetVolume = 1000;
+    const progressPercent = Math.min(Math.round((totalSolved / targetVolume) * 100), 100);
     document.getElementById('overall-progress').style.width = `${progressPercent}%`;
-    document.getElementById('progress-text').textContent = `${progressPercent}% (${totalSolved} / ${weeklyGoal})`;
+    document.getElementById('progress-text').textContent = `${progressPercent}% (${totalSolved} / ${targetVolume.toLocaleString('pt-BR')})`;
 
     // Cobertura geral do edital (todos os tópicos, todas as matérias)
     let totalTopics = 0;
@@ -499,10 +534,13 @@ function renderCycle() {
     STUDY_CYCLE.forEach((step, index) => {
         let stepClass = 'cycle-step';
         let badgeText = 'Aguardando';
+        let progressText = '2 Pomodoros de foco';
 
         if (index === appState.currentCycleIndex) {
             stepClass += ' active';
-            badgeText = '👉 Próximo';
+            const done = Math.min(appState.cyclePomodorosDone, 2);
+            badgeText = done >= 2 ? '✅ Pronto p/ avançar' : '👉 Em andamento';
+            progressText = `${done}/2 pomodoros concluídos`;
         } else if (index < appState.currentCycleIndex) {
             stepClass += ' completed';
             badgeText = '✅ Feito';
@@ -512,7 +550,7 @@ function renderCycle() {
             <div class="${stepClass}">
                 <div>
                     <strong style="display: block;">Etapa ${index + 1}: ${step.name}</strong>
-                    <span style="font-size: 0.78rem; color: var(--text-secondary);">2 Pomodoros de foco</span>
+                    <span class="cycle-step-progress">${progressText}</span>
                 </div>
                 <span style="font-size: 0.8rem; font-weight: 600;">${badgeText}</span>
             </div>
@@ -522,6 +560,8 @@ function renderCycle() {
 
 btnAdvanceCycle.addEventListener('click', () => {
     appState.currentCycleIndex = (appState.currentCycleIndex + 1) % STUDY_CYCLE.length;
+    appState.cyclePomodorosDone = 0; // nova etapa, novo contador - a etapa anterior guarda seu histórico só nos logs de questões
+    sessionEndMessageDiv.textContent = '';
     saveToLocalStorage();
     updateDashboard();
 });
@@ -671,7 +711,7 @@ btnSaveEssay.addEventListener('click', () => {
 
 window.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
-    updateTimerDisplay();
+    setTimerMode(appState.timer.currentMode);
     populateTopicSelect(subjectSelect.value);
     updateDashboard();
 });
