@@ -47,6 +47,64 @@ body {
     font-size: 0.85rem;
 }
 
+/* BARRA DE STATUS: streak, retomar de onde parou, meta mínima do dia */
+.status-bar {
+    max-width: 1300px;
+    margin: 0 auto 15px auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 700px) {
+    .status-bar {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.status-pill {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-pill-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.status-pill-value {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.status-pill-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+#streak-pill.cold .status-pill-icon {
+    opacity: 0.35;
+    filter: grayscale(1);
+}
+
+#daily-goal-pill {
+    cursor: pointer;
+}
+
+#daily-goal-pill.met {
+    border-color: var(--accent-green);
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+#daily-goal-pill.met .status-pill-value {
+    color: var(--accent-green);
+}
+
 /* CONTAINER PRINCIPAL EM GRID DE 3 COLUNAS */
 .dashboard-grid {
     max-width: 1300px;
