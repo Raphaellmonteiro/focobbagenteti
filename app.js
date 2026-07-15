@@ -80,6 +80,7 @@ let appState = {
     lastGoalSuggestionStreak: 0,
     logs: [],
     essays: [],
+    questionBank: [], // questões específicas marcadas pra revisão (ID do Estratégia + acerto/erro + anotação)
     topicStatus: {} // ex: { "ti-0": "reviewed", "portugues-2": "studying" }
 };
 
@@ -253,6 +254,7 @@ function saveToLocalStorage() {
     localStorage.setItem('bb_study_state_v5', JSON.stringify({
         logs: appState.logs,
         essays: appState.essays,
+        questionBank: appState.questionBank,
         currentCycleIndex: appState.currentCycleIndex,
         cyclePomodorosDone: appState.cyclePomodorosDone,
         topicStatus: appState.topicStatus,
@@ -270,6 +272,7 @@ function loadFromLocalStorage() {
         const parsed = JSON.parse(saved);
         if (parsed.logs) appState.logs = parsed.logs;
         if (parsed.essays) appState.essays = parsed.essays;
+        if (parsed.questionBank) appState.questionBank = parsed.questionBank;
         if (parsed.currentCycleIndex !== undefined) appState.currentCycleIndex = parsed.currentCycleIndex;
         if (parsed.cyclePomodorosDone !== undefined) appState.cyclePomodorosDone = parsed.cyclePomodorosDone;
         if (parsed.topicStatus) appState.topicStatus = parsed.topicStatus;
@@ -862,9 +865,150 @@ btnSaveEssay.addEventListener('click', () => {
     essayScoreInput.value = '';
 });
 
+// --- BANCO DE QUESTÕES PARA REVISÃO ---
+// Guarda questões específicas (pelo ID delas no Estratégia) que valem a pena revisar depois,
+// principalmente as que você errou. A ideia não é logar toda questão, é não deixar escapar
+// a que já te pegou uma vez (ou uma parecida dela, no mesmo assunto).
+const qbForm = document.getElementById('qb-form');
+const qbSubjectSelect = document.getElementById('qb-subject');
+const qbTopicSelect = document.getElementById('qb-topic');
+const qbQuestionIdInput = document.getElementById('qb-question-id');
+const qbResultSelect = document.getElementById('qb-result');
+const qbNoteInput = document.getElementById('qb-note');
+const qbFilterSubject = document.getElementById('qb-filter-subject');
+const qbFilterStatus = document.getElementById('qb-filter-status');
+const qbFilterSearch = document.getElementById('qb-filter-search');
+const qbListDiv = document.getElementById('qb-list');
+
+function populateQBTopicSelect(subjectKey) {
+    const topics = SYLLABUS[subjectKey] || [];
+    let optionsHtml = '<option value="">📌 Geral (assunto não especificado)</option>';
+    optionsHtml += topics.map((topicName, index) => `<option value="${index}">${topicName}</option>`).join('');
+    qbTopicSelect.innerHTML = optionsHtml;
+}
+
+qbSubjectSelect.addEventListener('change', () => {
+    populateQBTopicSelect(qbSubjectSelect.value);
+});
+
+qbForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const subject = qbSubjectSelect.value;
+    const topicRaw = qbTopicSelect.value;
+    const topicIndex = topicRaw === '' ? null : parseInt(topicRaw);
+    const topicName = topicIndex !== null ? SYLLABUS[subject][topicIndex] : null;
+    const questionId = qbQuestionIdInput.value.trim();
+    const result = qbResultSelect.value;
+    const note = qbNoteInput.value.trim();
+
+    if (!questionId) {
+        alert('Cole o ID da questão no Estratégia pra dar pra achar ela de novo depois.');
+        return;
+    }
+
+    const today = new Date();
+    const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+
+    const newItem = {
+        id: Date.now().toString(),
+        subject,
+        topicIndex,
+        topicName,
+        questionId,
+        result,
+        note,
+        date: formattedDate,
+        reviewed: false,
+        reviewCount: 0
+    };
+
+    appState.questionBank.unshift(newItem);
+    registerActivityToday();
+    saveToLocalStorage();
+    renderQuestionBank();
+
+    qbQuestionIdInput.value = '';
+    qbNoteInput.value = '';
+    qbResultSelect.value = 'wrong';
+});
+
+qbFilterSubject.addEventListener('change', renderQuestionBank);
+qbFilterStatus.addEventListener('change', renderQuestionBank);
+qbFilterSearch.addEventListener('input', renderQuestionBank);
+
+window.toggleQBReviewed = function(id) {
+    const item = appState.questionBank.find(q => q.id === id);
+    if (!item) return;
+    item.reviewed = !item.reviewed;
+    if (item.reviewed) item.reviewCount = (item.reviewCount || 0) + 1;
+    saveToLocalStorage();
+    renderQuestionBank();
+};
+
+window.deleteQBItem = function(id) {
+    if (!confirm('Apagar esta questão do banco de revisão?')) return;
+    appState.questionBank = appState.questionBank.filter(q => q.id !== id);
+    saveToLocalStorage();
+    renderQuestionBank();
+};
+
+function renderQuestionBank() {
+    const filterSubject = qbFilterSubject.value;
+    const filterStatus = qbFilterStatus.value; // 'pending' | 'reviewed' | 'all'
+    const filterSearch = qbFilterSearch.value.trim().toLowerCase();
+
+    let items = appState.questionBank.filter(item => {
+        if (filterSubject && item.subject !== filterSubject) return false;
+        if (filterStatus === 'pending' && item.reviewed) return false;
+        if (filterStatus === 'reviewed' && !item.reviewed) return false;
+        if (filterSearch && !item.questionId.toLowerCase().includes(filterSearch)) return false;
+        return true;
+    });
+
+    // Prioriza: não revisadas primeiro, erradas antes de "na dúvida", mais recentes primeiro dentro de cada grupo
+    items = items.sort((a, b) => {
+        if (a.reviewed !== b.reviewed) return a.reviewed ? 1 : -1;
+        if (a.result !== b.result) return a.result === 'wrong' ? -1 : 1;
+        return Number(b.id) - Number(a.id);
+    });
+
+    if (items.length === 0) {
+        qbListDiv.innerHTML = `<div class="qb-empty">Nenhuma questão encontrada com esses filtros. Marque as questões que você errar no Estratégia aqui pra montar sua lista de revisão.</div>`;
+        return;
+    }
+
+    qbListDiv.innerHTML = items.map(item => {
+        const resultBadge = item.result === 'wrong'
+            ? '<span class="qb-result-badge wrong">🔴 Errei</span>'
+            : '<span class="qb-result-badge doubt">🟡 Na dúvida</span>';
+        const subjectLabel = item.topicName ? `${SUBJECT_MAP[item.subject]} · ${item.topicName}` : SUBJECT_MAP[item.subject];
+        const reviewedTag = item.reviewed ? ` · revisada ${item.reviewCount}x` : '';
+
+        return `
+            <div class="qb-item ${item.reviewed ? 'reviewed' : ''}">
+                <div class="qb-item-top">
+                    <div class="qb-item-tags">
+                        ${resultBadge}
+                        <span class="qb-question-id">ID: ${item.questionId}</span>
+                        <span class="qb-item-subject">${subjectLabel}</span>
+                    </div>
+                    <span class="qb-item-date">${item.date}${reviewedTag}</span>
+                </div>
+                ${item.note ? `<div class="qb-item-note">${item.note}</div>` : ''}
+                <div class="qb-item-actions">
+                    <button class="btn btn-secondary" onclick="toggleQBReviewed('${item.id}')">${item.reviewed ? '↩️ Reabrir' : '✅ Já revisei'}</button>
+                    <button class="btn btn-danger" onclick="deleteQBItem('${item.id}')">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
     setTimerMode(appState.timer.currentMode);
     populateTopicSelect(subjectSelect.value);
+    populateQBTopicSelect(qbSubjectSelect.value);
     updateDashboard();
+    renderQuestionBank();
 });
