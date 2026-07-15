@@ -76,6 +76,8 @@ let appState = {
     pomodoroLog: [],
     // Meta mínima diária, de propósito bem pequena, pra reduzir a barreira de começar (edite clicando na pill).
     dailyGoalQuestions: 5,
+    // Último "marco" de streak de meta batida em que já sugerimos aumentar a meta (evita ficar sugerindo toda hora).
+    lastGoalSuggestionStreak: 0,
     logs: [],
     essays: [],
     topicStatus: {} // ex: { "ti-0": "reviewed", "portugues-2": "studying" }
@@ -103,6 +105,29 @@ function registerActivityToday() {
         appState.streak.count = 1;
     }
     appState.streak.lastActiveDateStr = todayStr;
+}
+
+// PADRÃO DE DESEMPENHO: calcula há quantos dias SEGUIDOS a meta mínima diária vem sendo batida,
+// olhando pro histórico real (logs e pomodoros já têm timestamp, não precisa guardar nada extra pra isso).
+// O dia de hoje só entra na conta se já foi cumprido; se ainda não foi, não quebra nem soma (o dia não acabou).
+function getGoalMetStreak() {
+    let streak = 0;
+    for (let i = 0; i < 60; i++) {
+        const day = new Date();
+        day.setDate(day.getDate() - i);
+        const dayStr = getDateStr(day);
+
+        const questionsThatDay = appState.logs
+            .filter(log => getDateStr(new Date(Number(log.id))) === dayStr)
+            .reduce((sum, log) => sum + log.solved, 0);
+        const pomodorosThatDay = appState.pomodoroLog.filter(ts => getDateStr(new Date(ts)) === dayStr).length;
+        const met = questionsThatDay >= appState.dailyGoalQuestions || pomodorosThatDay >= 1;
+
+        if (i === 0 && !met) continue; // hoje ainda não acabou, não conta a favor nem contra ainda
+        if (met) streak++;
+        else break;
+    }
+    return streak;
 }
 
 // --- POMODORO ---
@@ -234,7 +259,8 @@ function saveToLocalStorage() {
         timerMode: appState.timer.currentMode,
         streak: appState.streak,
         pomodoroLog: appState.pomodoroLog,
-        dailyGoalQuestions: appState.dailyGoalQuestions
+        dailyGoalQuestions: appState.dailyGoalQuestions,
+        lastGoalSuggestionStreak: appState.lastGoalSuggestionStreak
     }));
 }
 
@@ -251,6 +277,7 @@ function loadFromLocalStorage() {
         if (parsed.streak) appState.streak = parsed.streak;
         if (parsed.pomodoroLog) appState.pomodoroLog = parsed.pomodoroLog;
         if (parsed.dailyGoalQuestions) appState.dailyGoalQuestions = parsed.dailyGoalQuestions;
+        if (parsed.lastGoalSuggestionStreak !== undefined) appState.lastGoalSuggestionStreak = parsed.lastGoalSuggestionStreak;
     }
 }
 
@@ -535,7 +562,48 @@ function renderStatusBar() {
     document.getElementById('daily-goal-value').textContent = `${questionsToday}/${appState.dailyGoalQuestions} questões`;
     document.getElementById('daily-goal-icon').textContent = goalMet ? '✅' : '⬜';
     document.getElementById('daily-goal-pill').classList.toggle('met', goalMet);
+
+    checkGoalSuggestion();
 }
+
+// SUGESTÃO ADAPTATIVA: a cada marco de 5 dias seguidos batendo a meta mínima, sugere subir a meta um pouco.
+// Nunca aumenta sozinho — só sugere, com botão pra aceitar ou manter como está.
+let pendingGoalSuggestion = null;
+const goalSuggestionBanner = document.getElementById('goal-suggestion-banner');
+const goalSuggestionText = document.getElementById('goal-suggestion-text');
+const btnAcceptGoalIncrease = document.getElementById('btn-accept-goal-increase');
+const btnDismissGoalIncrease = document.getElementById('btn-dismiss-goal-increase');
+
+function checkGoalSuggestion() {
+    const MILESTONE_STEP = 5;
+    const goalMetStreak = getGoalMetStreak();
+    const currentMilestone = Math.floor(goalMetStreak / MILESTONE_STEP) * MILESTONE_STEP;
+
+    if (currentMilestone > 0 && currentMilestone > appState.lastGoalSuggestionStreak) {
+        const suggestedGoal = appState.dailyGoalQuestions + Math.max(2, Math.round(appState.dailyGoalQuestions * 0.3));
+        pendingGoalSuggestion = { newGoal: suggestedGoal, milestone: currentMilestone };
+        goalSuggestionText.textContent = `🎯 Você bateu sua meta mínima ${currentMilestone} dias seguidos! Que tal subir de ${appState.dailyGoalQuestions} para ${suggestedGoal} questões/dia?`;
+        goalSuggestionBanner.style.display = 'flex';
+    } else {
+        pendingGoalSuggestion = null;
+        goalSuggestionBanner.style.display = 'none';
+    }
+}
+
+btnAcceptGoalIncrease.addEventListener('click', () => {
+    if (!pendingGoalSuggestion) return;
+    appState.dailyGoalQuestions = pendingGoalSuggestion.newGoal;
+    appState.lastGoalSuggestionStreak = pendingGoalSuggestion.milestone;
+    saveToLocalStorage();
+    updateDashboard();
+});
+
+btnDismissGoalIncrease.addEventListener('click', () => {
+    if (!pendingGoalSuggestion) return;
+    appState.lastGoalSuggestionStreak = pendingGoalSuggestion.milestone;
+    saveToLocalStorage();
+    updateDashboard();
+});
 
 // Clique na pill de meta mínima pra ajustar o número (mantenha pequeno e alcançável de propósito)
 window.editDailyGoal = function() {
