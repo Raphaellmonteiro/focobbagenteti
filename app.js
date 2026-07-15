@@ -70,10 +70,40 @@ let appState = {
     // Existe pra imprevisto: se você só conseguir 1 dos 2 hoje e precisar parar, esse número fica salvo
     // e na próxima vez você continua exatamente daqui, sem perder o que já foi feito nem precisar repetir.
     cyclePomodorosDone: 0,
+    // STREAK: contagem de dias seguidos com pelo menos 1 ação de estudo (questão, redação ou pomodoro concluído).
+    streak: { count: 0, lastActiveDateStr: null },
+    // Registro (timestamps) de cada pomodoro de foco concluído, usado pra calcular "pomodoros hoje" e alimentar a streak.
+    pomodoroLog: [],
+    // Meta mínima diária, de propósito bem pequena, pra reduzir a barreira de começar (edite clicando na pill).
+    dailyGoalQuestions: 5,
     logs: [],
     essays: [],
     topicStatus: {} // ex: { "ti-0": "reviewed", "portugues-2": "studying" }
 };
+
+// --- HELPERS DE DATA (streak e meta diária) ---
+function getDateStr(date) {
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+}
+
+function isToday(timestamp) {
+    return getDateStr(new Date(timestamp)) === getDateStr(new Date());
+}
+
+// Chamada sempre que uma ação de estudo de verdade acontece (questão lançada, redação lançada, pomodoro concluído).
+// Atualiza a streak: mantém se já contou hoje, soma 1 se o último dia ativo foi ontem, ou reinicia em 1 se houve um buraco.
+function registerActivityToday() {
+    const todayStr = getDateStr(new Date());
+    if (appState.streak.lastActiveDateStr === todayStr) return;
+
+    const yesterdayStr = getDateStr(new Date(Date.now() - 86400000));
+    if (appState.streak.lastActiveDateStr === yesterdayStr) {
+        appState.streak.count += 1;
+    } else {
+        appState.streak.count = 1;
+    }
+    appState.streak.lastActiveDateStr = todayStr;
+}
 
 // --- POMODORO ---
 const timerDisplay = document.getElementById('timer');
@@ -102,8 +132,12 @@ function startTimer() {
             appState.timer.isRunning = false;
 
             if (appState.timer.currentMode === 'study') {
-                // Pomodoro de foco concluído de verdade (não apenas iniciado) -> conta pra meta da etapa atual.
+                // Pomodoro de foco concluído de verdade (não apenas iniciado) -> conta pra meta da etapa atual,
+                // entra no registro de pomodoros de hoje, e alimenta a streak de dias seguidos.
                 appState.cyclePomodorosDone++;
+                appState.pomodoroLog.push(Date.now());
+                appState.pomodoroLog = appState.pomodoroLog.filter(ts => ts > Date.now() - 60 * 86400000); // guarda só os últimos ~60 dias
+                registerActivityToday();
                 saveToLocalStorage();
                 updateDashboard();
                 alert('Pomodoro concluído! Hora da pausa de 5 minutos.');
@@ -197,7 +231,10 @@ function saveToLocalStorage() {
         currentCycleIndex: appState.currentCycleIndex,
         cyclePomodorosDone: appState.cyclePomodorosDone,
         topicStatus: appState.topicStatus,
-        timerMode: appState.timer.currentMode
+        timerMode: appState.timer.currentMode,
+        streak: appState.streak,
+        pomodoroLog: appState.pomodoroLog,
+        dailyGoalQuestions: appState.dailyGoalQuestions
     }));
 }
 
@@ -211,6 +248,9 @@ function loadFromLocalStorage() {
         if (parsed.cyclePomodorosDone !== undefined) appState.cyclePomodorosDone = parsed.cyclePomodorosDone;
         if (parsed.topicStatus) appState.topicStatus = parsed.topicStatus;
         if (parsed.timerMode) appState.timer.currentMode = parsed.timerMode;
+        if (parsed.streak) appState.streak = parsed.streak;
+        if (parsed.pomodoroLog) appState.pomodoroLog = parsed.pomodoroLog;
+        if (parsed.dailyGoalQuestions) appState.dailyGoalQuestions = parsed.dailyGoalQuestions;
     }
 }
 
@@ -464,7 +504,50 @@ function updateDashboard() {
     renderCycle();
     renderRecentLogs();
     renderStrengthsWeaknesses(topicStats);
+    renderStatusBar();
 }
+
+// BARRA DE STATUS: streak de dias seguidos, "retome de onde parou" e meta mínima do dia.
+// Existe pra reduzir a barreira de começar e dar um sinal de continuidade em vez de tudo-ou-nada.
+function renderStatusBar() {
+    // Streak
+    const streakValueEl = document.getElementById('streak-value');
+    const streakPillEl = document.getElementById('streak-pill');
+    streakValueEl.textContent = `${appState.streak.count} ${appState.streak.count === 1 ? 'dia' : 'dias'}`;
+    streakPillEl.classList.toggle('cold', appState.streak.count === 0);
+
+    // Retomar de onde parou
+    const step = STUDY_CYCLE[appState.currentCycleIndex];
+    const done = Math.min(appState.cyclePomodorosDone, 2);
+    let resumeText = '';
+    if (done === 0) resumeText = `Comece: ${step.name}`;
+    else if (done === 1) resumeText = `Falta 1 pomodoro: ${step.name}`;
+    else resumeText = `Pronto p/ avançar: ${step.name}`;
+    document.getElementById('resume-value').textContent = resumeText;
+
+    // Meta mínima do dia (bem pequena, de propósito, pra não travar o começo)
+    const questionsToday = appState.logs
+        .filter(log => isToday(Number(log.id)))
+        .reduce((sum, log) => sum + log.solved, 0);
+    const pomodorosToday = appState.pomodoroLog.filter(ts => isToday(ts)).length;
+    const goalMet = questionsToday >= appState.dailyGoalQuestions || pomodorosToday >= 1;
+
+    document.getElementById('daily-goal-value').textContent = `${questionsToday}/${appState.dailyGoalQuestions} questões`;
+    document.getElementById('daily-goal-icon').textContent = goalMet ? '✅' : '⬜';
+    document.getElementById('daily-goal-pill').classList.toggle('met', goalMet);
+}
+
+// Clique na pill de meta mínima pra ajustar o número (mantenha pequeno e alcançável de propósito)
+window.editDailyGoal = function() {
+    const input = prompt('Meta mínima de questões por dia (algo bem pequeno e realista, tipo 5):', appState.dailyGoalQuestions);
+    if (input === null) return;
+    const num = parseInt(input);
+    if (!isNaN(num) && num > 0) {
+        appState.dailyGoalQuestions = num;
+        saveToLocalStorage();
+        updateDashboard();
+    }
+};
 
 // DIAGNÓSTICO DE PONTOS FORTES E FRACOS: junta todos os assuntos (de todas as matérias) que já têm
 // pelo menos MIN_SAMPLE questões lançadas, ordena por taxa de acerto e mostra os melhores e os piores.
@@ -676,6 +759,7 @@ questoesForm.addEventListener('submit', (e) => {
     };
 
     appState.logs.unshift(newLog);
+    registerActivityToday();
     saveToLocalStorage();
     updateDashboard();
     questoesForm.reset();
@@ -702,6 +786,7 @@ btnSaveEssay.addEventListener('click', () => {
     };
 
     appState.essays.unshift(newEssay);
+    registerActivityToday();
     saveToLocalStorage();
     updateDashboard();
 
