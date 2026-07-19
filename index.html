@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gabarito — Registro de Questões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◧</span>
+      <div class="brand-text">
+        <h1>Gabarito</h1>
+        <p>Banco do Brasil · Agente de Tecnologia · Cesgranrio</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="registrar">Registrar</button>
+      <button class="tab" data-tab="dashboard">Painel</button>
+      <button class="tab" data-tab="revisao">Revisão</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ===== TAB: REGISTRAR ===== -->
+    <section class="tab-panel active" id="panel-registrar">
+      <div class="grid-registrar">
+
+        <form class="card form-registro" id="form-registro" autocomplete="off">
+          <h2>Nova questão</h2>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="materia">Matéria</label>
+              <select id="materia" required></select>
+            </div>
+            <div class="field">
+              <label for="codigo">Código da questão</label>
+              <input type="text" id="codigo" inputmode="numeric" placeholder="ex: 4001801342">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="assunto">Assunto</label>
+            <input type="text" id="assunto" list="assunto-list" placeholder="Selecione a matéria primeiro">
+            <datalist id="assunto-list"></datalist>
+          </div>
+
+          <div class="field">
+            <label>Como você foi <span class="kbd-hint">(atalhos 1‑4)</span></label>
+            <div class="status-picker" id="status-picker">
+              <button type="button" class="bubble bubble-acertei" data-status="acertei">
+                <span class="bubble-mark">✓</span><span>Acertei</span><kbd>1</kbd>
+              </button>
+              <button type="button" class="bubble bubble-errei" data-status="errei">
+                <span class="bubble-mark">✕</span><span>Errei</span><kbd>2</kbd>
+              </button>
+              <button type="button" class="bubble bubble-duvida" data-status="duvida">
+                <span class="bubble-mark">?</span><span>Dúvida</span><kbd>3</kbd>
+              </button>
+              <button type="button" class="bubble bubble-chute" data-status="chute">
+                <span class="bubble-mark">⚄</span><span>Chute</span><kbd>4</kbd>
+              </button>
+            </div>
+          </div>
+
+          <div class="field" id="motivo-field" hidden>
+            <label for="motivo">Por que errou / qual a dúvida?</label>
+            <textarea id="motivo" rows="2" placeholder="ex: confundi differential privacy com data augmentation"></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="dificuldade">Dificuldade <span class="opt">(opcional)</span></label>
+              <select id="dificuldade">
+                <option value="">—</option>
+                <option value="muito_facil">Muito fácil</option>
+                <option value="facil">Fácil</option>
+                <option value="moderada">Moderada</option>
+                <option value="dificil">Difícil</option>
+                <option value="muito_dificil">Muito difícil</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ano">Ano da questão <span class="opt">(opcional)</span></label>
+              <input type="number" id="ano" placeholder="ex: 2024" min="1990" max="2100">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="banca">Banca</label>
+              <input type="text" id="banca" value="Cesgranrio">
+            </div>
+            <div class="field">
+              <label for="data">Data</label>
+              <input type="date" id="data">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-salvar">Salvar e continuar</button>
+          <p class="save-hint">Enter salva rápido · o formulário limpa sozinho pra próxima questão</p>
+        </form>
+
+        <div class="card recentes">
+          <h2>Últimas registradas</h2>
+          <div id="lista-recentes" class="lista-recentes"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== TAB: DASHBOARD ===== -->
+    <section class="tab-panel" id="panel-dashboard">
+
+      <div class="card meta-card">
+        <div class="meta-header">
+          <div>
+            <h2>Meta de questões</h2>
+            <p id="meta-numero" class="meta-numero">0 / 1000</p>
+          </div>
+          <p id="meta-pct" class="meta-pct">0%</p>
+        </div>
+        <div class="gabarito-grid" id="gabarito-grid" aria-label="Cada bolinha representa uma questão resolvida"></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card stat-card stat-acertei">
+          <span class="stat-label">Acertei</span>
+          <span class="stat-value" id="stat-acertei">0</span>
+          <span class="stat-pct" id="stat-acertei-pct">0%</span>
+        </div>
+        <div class="card stat-card stat-errei">
+          <span class="stat-label">Errei</span>
+          <span class="stat-value" id="stat-errei">0</span>
+          <span class="stat-pct" id="stat-errei-pct">0%</span>
+        </div>
+        <div class="card stat-card stat-duvida">
+          <span class="stat-label">Dúvida</span>
+          <span class="stat-value" id="stat-duvida">0</span>
+          <span class="stat-pct" id="stat-duvida-pct">0%</span>
+        </div>
+        <div class="card stat-card stat-chute">
+          <span class="stat-label">Chute</span>
+          <span class="stat-value" id="stat-chute">0</span>
+          <span class="stat-pct" id="stat-chute-pct">0%</span>
+        </div>
+      </div>
+
+      <div class="grid-2col">
+        <div class="card">
+          <h2>Taxa de acerto por matéria</h2>
+          <div id="materias-bars" class="materias-bars"></div>
+        </div>
+        <div class="card">
+          <h2>Assuntos mais fracos</h2>
+          <p class="card-sub">Ordenado por taxa de erro (mín. 3 questões)</p>
+          <div id="ranking-fracos" class="ranking-fracos"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="streak-row">
+          <div>
+            <h2>Sequência de estudo</h2>
+            <p class="card-sub">Dias seguidos com pelo menos 1 questão registrada</p>
+          </div>
+          <p class="streak-numero" id="streak-numero">0 dias</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Backup dos dados</h2>
+        <p class="card-sub">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada.</p>
+        <div class="backup-actions">
+          <button class="btn-secondary" id="btn-exportar">Exportar backup (JSON)</button>
+          <label class="btn-secondary btn-file">
+            Importar backup
+            <input type="file" id="input-importar" accept="application/json" hidden>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== TAB: REVISÃO ===== -->
+    <section class="tab-panel" id="panel-revisao">
+      <div class="card">
+        <div class="revisao-header">
+          <h2>Revisar questões</h2>
+          <div class="revisao-filtros">
+            <select id="filtro-materia">
+              <option value="">Todas as matérias</option>
+            </select>
+            <select id="filtro-status">
+              <option value="">Errei + Dúvida</option>
+              <option value="errei">Só errei</option>
+              <option value="duvida">Só dúvida</option>
+              <option value="revisadas">Já revisadas</option>
+            </select>
+          </div>
+        </div>
+        <div id="lista-revisao" class="lista-revisao"></div>
+        <p id="revisao-vazio" class="empty-state" hidden>Nada por aqui — filtre por outra matéria ou registre mais questões.</p>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
