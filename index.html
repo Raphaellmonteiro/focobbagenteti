@@ -163,8 +163,24 @@
             </div>
           </div>
 
-          <details class="conteudo-completo">
+          <details class="conteudo-completo" open>
             <summary>➕ Conteúdo completo da questão <span class="opt">(opcional — recomendado pra montar seu banco de revisão)</span></summary>
+
+            <div class="field colar-pdf-box">
+              <label for="colar-bruto">⚡ Cole aqui o bloco copiado do PDF (enunciado + alternativas)</label>
+              <textarea id="colar-bruto" rows="6" placeholder="Cole o texto igual copiou do PDF, algo como:
+A) primeira alternativa
+B) segunda alternativa
+C) terceira alternativa
+D) quarta alternativa
+E) quinta alternativa
+
+Funciona com A) (A) A. A- etc."></textarea>
+              <div class="colar-pdf-actions">
+                <button type="button" class="btn-secondary" id="btn-colar-separar">✂️ Separar automaticamente</button>
+                <span class="colar-pdf-status" id="colar-pdf-status"></span>
+              </div>
+            </div>
 
             <div class="field">
               <label for="texto-base">Texto de apoio <span class="opt">(o texto/trecho que a questão se refere — cole uma vez, ele se repete nas questões do mesmo Grupo)</span></label>
@@ -233,64 +249,108 @@
 
     <!-- ===== TAB: DASHBOARD ===== -->
     <section class="tab-panel" id="panel-dashboard">
+      <div class="dash-grid">
 
-      <div class="card meta-card">
-        <div class="meta-header">
-          <div>
-            <h2>Meta de questões</h2>
-            <p id="meta-numero" class="meta-numero">0 / 1000</p>
-            <p id="meta-origem" class="meta-origem"></p>
+        <div class="card filtro-periodo-card span2">
+          <div class="filtro-periodo-row">
+            <div>
+              <h2>Desempenho no período</h2>
+              <p class="card-sub" id="filtro-periodo-resumo">Tudo, desde o início</p>
+            </div>
+            <div class="filtro-periodo-controles">
+              <select id="filtro-periodo">
+                <option value="hoje">Hoje</option>
+                <option value="semana">Últimos 7 dias</option>
+                <option value="mes">Últimos 30 dias</option>
+                <option value="tudo" selected>Tudo</option>
+                <option value="custom">Personalizado</option>
+              </select>
+              <input type="date" id="filtro-periodo-de" hidden>
+              <span class="filtro-periodo-ate-label" id="filtro-periodo-ate-label" hidden>até</span>
+              <input type="date" id="filtro-periodo-ate" hidden>
+            </div>
           </div>
-          <p id="meta-pct" class="meta-pct">0%</p>
+          <p class="field-hint">Esse filtro vale pros cartões de desempenho abaixo (acertos, ritmo, prioridade, assuntos). Meta geral e sequência de estudo sempre olham pra tudo.</p>
         </div>
-        <div class="gabarito-grid" id="gabarito-grid" aria-label="Cada bolinha representa uma questão resolvida"></div>
-      </div>
 
-      <div class="stats-grid">
-        <div class="card stat-card stat-acertei">
-          <span class="stat-label">Acertei</span>
-          <span class="stat-value" id="stat-acertei">0</span>
-          <span class="stat-pct" id="stat-acertei-pct">0%</span>
-        </div>
-        <div class="card stat-card stat-errei">
-          <span class="stat-label">Errei</span>
-          <span class="stat-value" id="stat-errei">0</span>
-          <span class="stat-pct" id="stat-errei-pct">0%</span>
-        </div>
-        <div class="card stat-card stat-duvida">
-          <span class="stat-label">Dúvida</span>
-          <span class="stat-value" id="stat-duvida">0</span>
-          <span class="stat-pct" id="stat-duvida-pct">0%</span>
-        </div>
-        <div class="card stat-card stat-chute">
-          <span class="stat-label">Chute</span>
-          <span class="stat-value" id="stat-chute">0</span>
-          <span class="stat-pct" id="stat-chute-pct">0%</span>
-        </div>
-      </div>
-
-      <div class="card ritmo-card">
-        <div class="ritmo-header">
-          <div>
-            <h2>Ritmo de prova</h2>
-            <p class="card-sub">Baseado no seu cronômetro por questão. Ajuste o tempo total da prova conforme o edital vigente.</p>
+        <div class="card meta-card span2">
+          <div class="meta-header">
+            <div>
+              <h2>Meta de questões</h2>
+              <p id="meta-numero" class="meta-numero">0 / 1000</p>
+              <p id="meta-origem" class="meta-origem"></p>
+            </div>
+            <p id="meta-pct" class="meta-pct">0%</p>
           </div>
-          <div class="ritmo-config">
-            <label for="tempo-prova-min">Tempo total (min)</label>
-            <input type="number" id="tempo-prova-min" min="30" max="600" step="5">
+          <div class="gabarito-grid" id="gabarito-grid" aria-label="Cada bolinha representa uma questão resolvida"></div>
+        </div>
+
+        <div class="stats-grid span2">
+          <div class="card stat-card stat-acertei">
+            <span class="stat-label">Acertei</span>
+            <span class="stat-value" id="stat-acertei">0</span>
+            <span class="stat-pct" id="stat-acertei-pct">0%</span>
+          </div>
+          <div class="card stat-card stat-errei">
+            <span class="stat-label">Errei</span>
+            <span class="stat-value" id="stat-errei">0</span>
+            <span class="stat-pct" id="stat-errei-pct">0%</span>
+          </div>
+          <div class="card stat-card stat-duvida">
+            <span class="stat-label">Dúvida</span>
+            <span class="stat-value" id="stat-duvida">0</span>
+            <span class="stat-pct" id="stat-duvida-pct">0%</span>
+          </div>
+          <div class="card stat-card stat-chute">
+            <span class="stat-label">Chute</span>
+            <span class="stat-value" id="stat-chute">0</span>
+            <span class="stat-pct" id="stat-chute-pct">0%</span>
           </div>
         </div>
-        <p class="ritmo-resumo" id="ritmo-resumo"></p>
-        <div id="ritmo-bars" class="materias-bars"></div>
-      </div>
 
-      <div class="card">
-        <h2>Prioridade de ataque</h2>
-        <p class="card-sub">Cruza erro + tempo gasto pra apontar onde estudar rende mais agora (mín. 3 questões com tempo registrado)</p>
-        <div id="prioridade-lista" class="ranking-fracos"></div>
-      </div>
+        <div class="card">
+          <h2>Tempo de estudo</h2>
+          <p class="card-sub">Registre quanto tempo você estudou (teoria, revisão, questões — tudo entra aqui)</p>
+          <div class="tempo-estudo-add">
+            <input type="date" id="tempo-estudo-data">
+            <input type="number" id="tempo-estudo-min" placeholder="minutos" min="1" max="1000">
+            <button type="button" class="btn-secondary" id="btn-tempo-estudo-add">+ Adicionar</button>
+          </div>
+          <p class="tempo-estudo-resumo" id="tempo-estudo-resumo"></p>
+          <div id="tempo-estudo-semana" class="materias-bars"></div>
+        </div>
 
-      <div class="grid-2col">
+        <div class="card">
+          <div class="streak-row">
+            <div>
+              <h2>Sequência de estudo</h2>
+              <p class="card-sub">Dias seguidos com pelo menos 1 questão registrada</p>
+            </div>
+            <p class="streak-numero" id="streak-numero">0 dias</p>
+          </div>
+        </div>
+
+        <div class="card ritmo-card">
+          <div class="ritmo-header">
+            <div>
+              <h2>Ritmo de prova</h2>
+              <p class="card-sub">Baseado no seu cronômetro por questão.</p>
+            </div>
+            <div class="ritmo-config">
+              <label for="tempo-prova-min">Tempo total (min)</label>
+              <input type="number" id="tempo-prova-min" min="30" max="600" step="5">
+            </div>
+          </div>
+          <p class="ritmo-resumo" id="ritmo-resumo"></p>
+          <div id="ritmo-bars" class="materias-bars"></div>
+        </div>
+
+        <div class="card">
+          <h2>Prioridade de ataque</h2>
+          <p class="card-sub">Cruza erro + tempo gasto (mín. 3 questões)</p>
+          <div id="prioridade-lista" class="ranking-fracos"></div>
+        </div>
+
         <div class="card">
           <h2>Taxa de acerto por matéria</h2>
           <div id="materias-bars" class="materias-bars"></div>
@@ -300,37 +360,27 @@
           <p class="card-sub">Ordenado por taxa de erro (mín. 3 questões)</p>
           <div id="ranking-fracos" class="ranking-fracos"></div>
         </div>
-      </div>
 
-      <div class="card">
-        <h2>Famílias de questões</h2>
-        <p class="card-sub">Questão original + variações da IA agrupadas pelo campo "Grupo". Mostra onde você ainda não fechou a família toda.</p>
-        <div id="familias-lista" class="ranking-fracos"></div>
-      </div>
+        <div class="card span2">
+          <h2>Famílias de questões</h2>
+          <p class="card-sub">Questão original + variações da IA agrupadas pelo campo "Grupo". Mostra onde você ainda não fechou a família toda.</p>
+          <div id="familias-lista" class="ranking-fracos"></div>
+        </div>
 
-      <div class="card">
-        <div class="streak-row">
-          <div>
-            <h2>Sequência de estudo</h2>
-            <p class="card-sub">Dias seguidos com pelo menos 1 questão registrada</p>
+        <div class="card span2">
+          <h2>Backup dos dados</h2>
+          <p class="card-sub">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada.</p>
+          <div class="backup-actions">
+            <button class="btn-secondary" id="btn-exportar">Exportar backup (JSON)</button>
+            <label class="btn-secondary btn-file">
+              Importar backup
+              <input type="file" id="input-importar" accept="application/json" hidden>
+            </label>
+            <button class="btn-secondary btn-danger" id="btn-limpar">Limpar todos os dados</button>
           </div>
-          <p class="streak-numero" id="streak-numero">0 dias</p>
         </div>
-      </div>
 
-      <div class="card">
-        <h2>Backup dos dados</h2>
-        <p class="card-sub">Tudo fica salvo só neste navegador. Exporte de vez em quando pra não perder nada.</p>
-        <div class="backup-actions">
-          <button class="btn-secondary" id="btn-exportar">Exportar backup (JSON)</button>
-          <label class="btn-secondary btn-file">
-            Importar backup
-            <input type="file" id="input-importar" accept="application/json" hidden>
-          </label>
-          <button class="btn-secondary btn-danger" id="btn-limpar">Limpar todos os dados</button>
-        </div>
       </div>
-
     </section>
 
     <!-- ===== TAB: REVISÃO ===== -->
