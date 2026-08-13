@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molde — BB Agente Comercial · Cesgranrio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-stamp">M</span>
+      <div class="brand-text">
+        <h1>Molde</h1>
+        <p>Banco do Brasil · Agente Comercial · Cesgranrio</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="registrar">Registrar</button>
+      <button class="tab" data-tab="painel">Painel</button>
+      <button class="tab" data-tab="revisao">Revisão <span class="tab-badge" id="revisao-badge" hidden>0</span></button>
+      <button class="tab" data-tab="caderno">Caderno</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ===================== REGISTRAR ===================== -->
+    <section class="tab-panel active" id="panel-registrar">
+      <div class="grid-2">
+
+        <form class="card" id="form-questao" autocomplete="off">
+          <h2>Nova questão</h2>
+          <p class="card-sub">Uma questão original ou uma variação da família dela.</p>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="materia">Matéria</label>
+              <select id="materia" required></select>
+            </div>
+            <div class="field">
+              <label for="tipo">Tipo</label>
+              <select id="tipo">
+                <option value="original">Original da prova</option>
+                <option value="variacao_a">Variação A — mesma lógica</option>
+                <option value="variacao_b">Variação B — inversão de comando</option>
+                <option value="variacao_c">Variação C — armadilha</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="grupo">Família da questão <span class="opt">(mesmo nome liga original + 3 variações)</span></label>
+            <input type="text" id="grupo" list="grupo-list" placeholder="ex: PLD — fases do processo · Q31/2022">
+            <datalist id="grupo-list"></datalist>
+            <p class="field-hint" id="grupo-contador"></p>
+          </div>
+
+          <details class="conteudo-completo">
+            <summary>Conteúdo da questão <span class="opt">(opcional, recomendado)</span></summary>
+
+            <div class="field colar-pdf-box">
+              <label for="colar-bruto">Colar bloco copiado do PDF</label>
+              <textarea id="colar-bruto" rows="4" placeholder="A) ...&#10;B) ...&#10;C) ...&#10;D) ...&#10;E) ..."></textarea>
+              <div class="colar-pdf-actions">
+                <button type="button" class="btn-secondary" id="btn-colar-separar">Separar automaticamente</button>
+                <span class="colar-pdf-status" id="colar-pdf-status"></span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="enunciado">Enunciado</label>
+              <textarea id="enunciado" rows="3" placeholder="Comando da questão"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Alternativas</label>
+              <div class="alt-grid">
+                <input type="text" id="alt-a" placeholder="A)">
+                <input type="text" id="alt-b" placeholder="B)">
+                <input type="text" id="alt-c" placeholder="C)">
+                <input type="text" id="alt-d" placeholder="D)">
+                <input type="text" id="alt-e" placeholder="E)">
+              </div>
+            </div>
+          </details>
+
+          <div class="field">
+            <label>Como você foi <span class="kbd-hint">(atalhos 1‑4)</span></label>
+            <div class="status-picker" id="status-picker">
+              <button type="button" class="bubble bubble-acertei" data-status="acertei"><span class="bubble-mark">✓</span><span>Acertei</span><kbd>1</kbd></button>
+              <button type="button" class="bubble bubble-errei" data-status="errei"><span class="bubble-mark">✕</span><span>Errei</span><kbd>2</kbd></button>
+              <button type="button" class="bubble bubble-duvida" data-status="duvida"><span class="bubble-mark">?</span><span>Dúvida</span><kbd>3</kbd></button>
+              <button type="button" class="bubble bubble-chute" data-status="chute"><span class="bubble-mark">⚄</span><span>Chute</span><kbd>4</kbd></button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="resposta-marcada">Sua resposta</label>
+              <select id="resposta-marcada">
+                <option value="">—</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="gabarito">Gabarito</label>
+              <select id="gabarito">
+                <option value="">—</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" id="motivo-field" hidden>
+            <label for="motivo-categoria">Categoria do erro / dúvida</label>
+            <select id="motivo-categoria">
+              <option value="">— selecione —</option>
+              <option value="nao_sabia">(a) Não sabia o conteúdo</option>
+              <option value="interpretei_mal">(b) Interpretei mal o enunciado</option>
+              <option value="pegadinha_comando">(c) Caí na pegadinha do comando</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="padrao">Padrão / molde da banca identificado <span class="opt">(o mais importante — a armadilha ou estrutura usada)</span></label>
+            <input type="text" id="padrao" list="padrao-list" placeholder="ex: comando EXCETO escondendo verdade óbvia">
+            <datalist id="padrao-list"></datalist>
+          </div>
+
+          <label class="field-check" for="volatil">
+            <input type="checkbox" id="volatil">
+            <span>Conteúdo pode ficar desatualizado <span class="opt">(legislação, normas, taxas)</span></span>
+          </label>
+
+          <button type="submit" class="btn-primary" id="btn-salvar">Salvar e continuar</button>
+          <p class="save-hint">Enter salva rápido · matéria, tipo e família continuam preenchidos pra próxima variação</p>
+        </form>
+
+        <div class="card">
+          <h2>Últimas registradas</h2>
+          <div id="lista-recentes" class="lista-recentes"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== PAINEL ===================== -->
+    <section class="tab-panel" id="panel-painel">
+      <div class="dash-grid">
+
+        <div class="card stat-card-big">
+          <span class="stat-label">Taxa de acerto geral</span>
+          <span class="stat-value-big" id="stat-acerto-geral">—</span>
+          <span class="stat-sub" id="stat-total-questoes">0 questões</span>
+        </div>
+
+        <div class="card stat-card-big">
+          <span class="stat-label">Sequência de estudo</span>
+          <span class="stat-value-big" id="streak-numero">0 dias</span>
+          <span class="stat-sub">dias seguidos com questão registrada</span>
+        </div>
+
+        <div class="card timer-card">
+          <h2>Tempo de estudo</h2>
+          <div class="timer-box" id="timer-box-estudo">
+            <span class="timer-display" id="timer-display-estudo">00:00</span>
+            <div class="timer-actions">
+              <button type="button" class="btn-secondary" id="btn-estudo-timer-toggle">▶ Iniciar</button>
+            </div>
+          </div>
+          <div class="tempo-estudo-add">
+            <input type="date" id="tempo-estudo-data">
+            <input type="text" id="tempo-estudo-min" placeholder="hh:mm ou minutos">
+            <button type="button" class="btn-secondary" id="btn-tempo-estudo-add">+ Adicionar</button>
+          </div>
+          <p class="tempo-estudo-resumo" id="tempo-estudo-resumo"></p>
+        </div>
+
+        <div class="card span2">
+          <h2>Taxa de acerto por matéria</h2>
+          <div id="materias-bars" class="materias-bars"></div>
+        </div>
+
+        <div class="card span2 destaque-card">
+          <h2>Padrões da banca mais recorrentes</h2>
+          <p class="card-sub">Cruza todos os padrões que você identificou, em todas as matérias. Isso é o que mais importa — se um molde se repete, é ataque prioritário.</p>
+          <div id="padroes-lista" class="ranking-fracos"></div>
+          <p id="padroes-vazio" class="empty-state" hidden>Nenhum padrão registrado ainda. Preencha o campo "Padrão / molde da banca" ao salvar questões.</p>
+        </div>
+
+        <div class="card span2">
+          <h2>Famílias de questões</h2>
+          <p class="card-sub">Original + 3 variações agrupadas pelo campo "Família". Meta: 4 por família.</p>
+          <div id="familias-lista" class="ranking-fracos"></div>
+        </div>
+
+        <div class="card span2">
+          <h2>Backup dos dados</h2>
+          <div class="backup-actions">
+            <button class="btn-secondary" id="btn-exportar">Exportar backup (JSON)</button>
+            <label class="btn-secondary btn-file">Importar backup<input type="file" id="input-importar" accept="application/json" hidden></label>
+            <button class="btn-secondary btn-danger" id="btn-limpar">Limpar todos os dados</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== REVISÃO ===================== -->
+    <section class="tab-panel" id="panel-revisao">
+      <div class="card">
+        <div class="revisao-header">
+          <h2>Revisar questões</h2>
+          <div class="revisao-filtros">
+            <select id="filtro-materia"><option value="">Todas as matérias</option></select>
+            <select id="filtro-status">
+              <option value="">Errei + Dúvida</option>
+              <option value="errei">Só errei</option>
+              <option value="duvida">Só dúvida</option>
+              <option value="acertei">Só acertei</option>
+              <option value="chute">Só chute</option>
+              <option value="todas">Todas</option>
+            </select>
+            <button type="button" class="btn-primary btn-praticar" id="btn-iniciar-pratica">▶ Praticar estas</button>
+          </div>
+        </div>
+        <div id="lista-revisao" class="lista-revisao"></div>
+        <p id="revisao-vazio" class="empty-state" hidden>Nada por aqui — filtre diferente ou registre mais questões.</p>
+      </div>
+    </section>
+
+    <!-- ===================== CADERNO ===================== -->
+    <section class="tab-panel" id="panel-caderno">
+      <div class="caderno-grid">
+
+        <div class="card caderno-sidebar">
+          <div class="caderno-sidebar-topo">
+            <h2>Minhas folhas</h2>
+            <button type="button" class="btn-primary" id="btn-caderno-nova">+ Nova folha</button>
+            <button type="button" class="btn-secondary" id="btn-caderno-leitura">Modo leitura / PDF</button>
+          </div>
+          <select id="caderno-filtro-materia"><option value="">Todas as matérias</option></select>
+          <div id="caderno-lista" class="caderno-lista"></div>
+          <p id="caderno-lista-vazio" class="empty-state" hidden>Nenhuma folha ainda.</p>
+        </div>
+
+        <div class="card caderno-editor" id="caderno-editor" hidden>
+          <div class="caderno-editor-topo">
+            <input type="text" id="caderno-titulo" class="caderno-titulo-input" placeholder="Título da folha">
+            <select id="caderno-materia"><option value="">Geral / livre</option></select>
+            <button type="button" class="btn-secondary btn-danger" id="btn-caderno-excluir">Excluir</button>
+          </div>
+          <div class="caderno-toolbar">
+            <div class="caderno-toolbar-grupo" id="caderno-marcadores">
+              <span class="caderno-toolbar-label">Grifar:</span>
+              <button type="button" class="caderno-swatch sw-amarelo" data-marca="#fff176" title="Amarelo"></button>
+              <button type="button" class="caderno-swatch sw-verde" data-marca="rgba(58,125,103,.35)" title="Verde"></button>
+              <button type="button" class="caderno-swatch sw-azul" data-marca="rgba(46,92,138,.30)" title="Azul"></button>
+              <button type="button" class="caderno-swatch sw-vermelho" data-marca="rgba(193,68,58,.28)" title="Vermelho"></button>
+              <button type="button" class="caderno-toolbar-btn" id="btn-caderno-sem-grifo" title="Remover grifo">⌫</button>
+            </div>
+            <div class="caderno-toolbar-grupo">
+              <button type="button" class="caderno-toolbar-btn" id="btn-caderno-bold"><b>N</b></button>
+              <button type="button" class="caderno-toolbar-btn" id="btn-caderno-italic"><i>I</i></button>
+              <button type="button" class="caderno-toolbar-btn" id="btn-caderno-underline"><u>S</u></button>
+            </div>
+          </div>
+          <div class="caderno-area" id="caderno-area" contenteditable="true" data-placeholder="Escreva ou cole aqui..."></div>
+          <p class="caderno-salvo" id="caderno-salvo"></p>
+        </div>
+
+        <div class="card caderno-vazio-geral" id="caderno-sem-selecao">
+          <p class="empty-state">Selecione uma folha ou crie uma nova.</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="pratica-overlay" id="pratica-overlay">
+  <div class="pratica-modal">
+    <div class="pratica-top">
+      <span class="pratica-progresso" id="pratica-progresso">1 / 1</span>
+      <span class="pratica-placar" id="pratica-placar"></span>
+      <button type="button" class="btn-secondary" id="btn-pratica-sair">✕ Sair</button>
+    </div>
+    <div class="pratica-body" id="pratica-body"></div>
+  </div>
+</div>
+
+<div class="leitura-overlay" id="leitura-overlay">
+  <div class="leitura-top">
+    <button type="button" class="btn-secondary" id="btn-leitura-fechar">✕ Fechar</button>
+    <div class="leitura-nav">
+      <button type="button" class="btn-secondary" id="btn-leitura-anterior">◀</button>
+      <span class="leitura-contador" id="leitura-contador">1 / 1</span>
+      <button type="button" class="btn-secondary" id="btn-leitura-proxima">▶</button>
+    </div>
+    <button type="button" class="btn-primary" id="btn-leitura-imprimir">Baixar caderno em PDF</button>
+  </div>
+  <div class="leitura-corpo">
+    <div class="leitura-folha">
+      <h2 id="leitura-titulo"></h2>
+      <div class="leitura-conteudo" id="leitura-conteudo"></div>
+    </div>
+  </div>
+</div>
+<div id="caderno-print-area"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
